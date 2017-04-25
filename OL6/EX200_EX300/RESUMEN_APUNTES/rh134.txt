@@ -1,0 +1,4548 @@
+RH - 134
+System Administrator II  (2)
+Chapter 1.    Automatic Installation with kickstart
+Chapter 2.    Using Regular Expressions with GREP
+Chapter 3.     vim Editor
+Chapter 4.     Scheduling Future Linux Task
+Chapter 5.    Processes. Managing Priority
+Chapter 6.     ACL's
+Chapter 7.     SELinux
+Chapter 8.    Connecting to Network-defined Users and Groups (LDAP)
+Chapter 9.     Disk, Partitions and File Systems to a Linux System
+Chapter 10.    LVM. Logical Volume Manager
+Chapter 11.    NFS
+Chapter 12.     SMB
+Chapter 13.     Boot Process
+Chapter 14.     Firewall
+
+SCRIPTING
+RPM
+
+Para borrar las huella del know_hosts:
+(cliente) ssh-keygen -R server4          -R hostname Remove host from known_hosts file.
+
+PARA QUE LAS MV's cojan los mapeos del teclado y grafico en español:
+for i in server4 desktop4 ; do 
+ssh root@$i localectl     set-x11-keymap     es; 
+ssh root@$i localectl     set-keyboard         es; 
+done
+
+
+rht-vmsetkeyboard    all         es        poner teclados de server  y desktop a español
+rht-vmsetkeyboard    server4        es
+rht-vmsetkeyboard    desktop4        es
+
+rht-vmicons                        Crea los iconos
+
+
+13-2-15
+Chapter 1.    Automatic  Installation  with  kickstart
+
+ANACONDA:    Programa de instalacion de sistemas RHEL
+Puede ser
+- Manual
+- Guiado
+
+KICKSTART = patada inicial (en rugby)
+
+Se usa un fichero de configuracion, que lleva unas DIRECTIVAS
+El orden de las DIRECTIVAS no tiene porque seguir un patron
+
+-- ANACONDA no permite la instalacion de 1 paquete suelto, pero SI la negacion de 1 paquete suelto
+-- Los OPTIONAL NO se instalan
+-- Los DEFAULT SI se instalan
+
+El fichero se compone de 4 SECCIONES:
+1) SECCION de  CONFIGURACION
+Aqui van comandos para decir a Anaconda cómo tiene que instalar el SW de Red Hat en la maaquina target
+En rojo los obligatorios.
+    
+Instalation commands:
+url          Ubicacion del medio de instalacion (ej DVD )
+url    --url="ftp://classroom.example.com/pub/rhel7.0/dvd/
+
+repo            Le dice a anaconda donde encontrar los paquetes de instalacion
+        repo  --name="Custom Packages"  baseurl="ftp://repo.example.com/custom
+
+text            Fuerza la instalacion a modo texto    (reduce el tiempo de instalacion)
+
+vnc            Permite que una instalacion gráfica sea vista remotamente desde una VNC
+vnc  --password=redhat
+
+askmethod     Forzamos a que nos pregunte cual es el medio de instalacion (normalmente CD)
+
+Partitions commands:
+clearpart        Limpia las particiones especificadas. OJO: sin preguntar!!
+            clearpart  --alll  --drives=sda,sdb (la bios decide cual)  -initlabel
+
+part            Especifica nombre, tamaño y formatode 1 particion
+
+ignoredisk    Ignora los disco especificado cuando se instala: tiene preferencia
+
+bootloader     Donde instalará el bootloader
+        bootloader  --location=mbr  --boot-drive=sda
+
+zerombr        Los discos cuyo formato no se reconozca:  Los INIZIALIZA : crear el MBR
+
+volgroup,  logvol    Crea  LVM: VG Y LV
+
+network commands:
+network    CONFIGURA info de red en la maquina destino y ACTIVA los devices de red en el entorno de instalacion
+
+firewall        Define como será configurado el FIREWALL en la maquina destino
+
+Nota: Lo que pongamos aqui en network y firewall se hace PERSISTENTE
+
+Configuration Commands:
+lang        Lenguaje de la instalacion y lenguaje por default en el sistema intalado
+
+keyboard    Tipo de teclado
+
+timezone    Zona de tiempo , NTP servers y cuando el reloj HW usa UTC
+
+auth        Mecanismos de autenticacion del sistema    
+--usesshadow    --enablemd5
+
+rootpw        Define la passwd inicial de root
+        --plaintext  redhat
+        --iscrypted XXXXXXX
+
+selinux        Estado de SELINUX en el sistema instalado
+        -- enforcing
+
+services    servicios enables por default debajo del runlevel
+        --disable=network, iptables, ip6tables    --enabled=NetworkManager, Firewalld
+
+group, user    Crea un gupo local de usuarios en el sistema
+        group  --name=admins,  gid=1001
+        user  --name=Joe --gecos="desc Joe"   --groups=admins  --password=changeme  --plaintext
+
+Miscelanius Commands:
+
+logging        Define com Anaconda se logeará durante la intalación
+        --host=loghost.example.com   -level=info
+
+firstboot    Define cuando firstboor comienza la primera vez que el sistema es iniciado
+        --disabled
+
+reboot, poweroff,  halt
+        Especifica que debe ocurrir despues de que la intalacion acaba
+
+
+2) SECCION PACKAGES
+%PACKAGE        --En RHEL7 es solo para grupos
+@        Package Groups
+@^       Environment groups    (grupos de grupos de paquetes)
+-       Excluded (Package o grupo de package) a menos que sea incluido por dependencias
+%end
+
+3) SECCION  PRE - INSTALACION
+%pre
+    Shell SH
+%end
+
+4) SECCION  POST - INSTALACION
+%post
+    Shell SH por defecto, pero ya puedo usar otra SHELL si la he instalado previamente
+%end
+
+
+HERRAMIENTAS PARA CREAR FICHEROS :  KICKSTART
+
+
+system-config-kickstart        -- herramienta  GRAFICA para crear un CFG. No viene por defecto
+                    -- Cualquier editor de textos vale crear el fichero .CFG
+
+ksvalidator    <FicheroCFG>        -- Valida la sintaxis
+
+PASOS PARA LA INSTALACION:
+1) Creamos el fichero .cfg
+2) Publicamos  a un servidor externo  ftp, http, hacia anaconda
+3)  Arrancamos un instalador que apunte al fichero de kickstart
+
+
+
+Practice:    Installing  System  Using Kickstart
+
+
+Si el fichero .CFG  esta en un CDROM:
+ks = cdrom:/path
+
+Si el fichero .CFG   esta en un DISCO:
+ks = hd:<disk-ID>:/path
+ej:    ks = hd:<sda1>:/path
+    ks = hd:<sda2>:/path
+    ks = hd:<LABEL=XXXXX>:/path        OJO
+    ks = hd:<UID=XXXXX>:/path        MEJOR
+
+CONSEJOS:
+
+MIRAR la DOC de las GUIAS DE RedHat:    redhat.com
+- La docu es abierta, no hace falta estar registrado.
+- Mirar tambien de fedoraproyect.org =  esta mas detallado
+
+
+3  Tipo de cursos:
+ILT        Instructor Learn Training  (nuestro curso)
+VT        Virtual Training        con instancias de Amazon
+ROLLED    Como VT pero sin instructor , para gente con mas experiencia
+
+
+16-2-15
+Chapter 2.    Using Regular Expressions with GREP
+
+grep:  General Regular Expression Parser
+Permite buscar lineas en un fichero , que coincida con un patron
+grep
+egrep        egrep = grep -e
+fgrep
+
+En RHEL7 grep es un alias:        alias egrep='egrep --color=auto'    --saca en color rojo las coincidencias
+Si no queremos que ponga el alias:    \grep
+
+whatis - imprime descripciones de páginas de manual
+whatis grep
+grep (1)             - print lines matching a pattern
+grep (1p)            - search a file for a pattern
+
+regex:        Regular Expresion
+        Es un STANDARD  INTERNACIONAL, esto no es linux. Se usan en muchos lenguajes.
+whatis regex
+regex (7)            - POSIX.2 regular expressions
+regex (3)            - POSIX regex functions
+
+
+grep     [[:upper:]]      fichero                Lineas que contengan Mayusculas
+grep      -v  [[:space:]]      fichero                Lineas que NO contengan espacios  
+
+METACHARS:
+
+grep con expresiones regulares BASICAS:
+    
+^    Principio de linea
+$    Final de linea
+
+Es importante poner comilla (') o comila doble (") en el grep, sino lo interpreta  la bash como separador de opciones
+grep  ^Hola fichero        -- En este caso nos funciona con o sin comillas porque la shell bash no se "lía"
+Hola chicos,
+grep  '^Hola' fichero
+Hola chicos,
+
+:set     list    =    Salen chars no-imprimibles en el vim
+
+*    Muestra las lines que salen:  0, 1 o mas veces el char anterior  
+    Solo afecta al char anterior
+
+    grep 'Bo*mba' fichero
+Bmba
+Bomba
+Booomba
+
+.    El punto (.) afecta a solo 1 char
+
+    grep "B.*mba" fichero        -- El punto+asterisco = .* = lo vamos a ver bastante
+Bmba
+Bomba
+Booomba
+Bimba
+Bamba
+
+<>    Buscan palabras 
+Pero hay que poner la barra invertida "\" para que la bash no se lie
+    grep     \<ola\>     fichero
+grep     '\<ola\>'    fichero            --Ahora si pilla la palabra:  ola
+Me alegro mucho de veros de nuevo ola !
+
+-El egrep me permite usar expresiones regulares EXTENDIDAS:
+
+?    Es una regex EXTENDIDA
+    0 ó  1 vez el char anterior  
+    
++    1 ó mas veces el char anterior
+
+{n,m}     de n ó  m veces el char anterior
+     egrep "Bo{3}mba" fichero        - Exactamente 3 veces el char anterior (o)
+Booomba
+    
+    egrep "Bo{2,3}mba" fichero        - 2 ó 3 veces el char anterior (o)
+Booomba
+Boomba
+    
+    egrep "Bo{,3}mba" fichero        -- Hasta 3 veces el char anterior
+Bmba
+Bomba
+Booomba
+Boomba
+
+    egrep "Bo{2,}mba" fichero        -- 2 o mas veces el char anterior
+Booomba
+Boomba
+
+
+Ej  1: , ¿como sería la regex  de una MATRICULA?
+
+[0-9]{4}[A-Z}{3}        Los 4 primeros chars son DIGITOS , los 3  siguientes chars tienen que ser LETRAS
+                Bueno realmente los chars no permiten vocales, seria mas extricto
+
+
+Ej  2:  ¿Como sería la regex de un CORREO ELECTRONICO?
+
+"^[a-zAZ0-9\.\._]+@"^[a-zAZ0-9\.\._]+\.[a-zAZ}{3}"
+Es muy complejo definirlo:
+Conjunto de chars (inluyendo . y _ )  @ Conjunto de chars (inluyendo . y _ )   .   3 chars exactos
+
+Ej 3:  Lineas que SOLO contengan DIGITOS:
+
+egrep  '^[0-9]+$'  fichero        -- Lineas que SOLO contengan numeros. El + indica que tiene que haber al menos 1 numero
+
+
+
+CHULETA DEL PROFE:
+^  principio de linea
+$  final de linea
+
+. un caracter cualquiera
+* 0 o más veces el caracter anterior
+? 0 o 1 veces el caracter anterior (extendida)
++ 1 o más veces el caracter anterior (extendida)
+
+[ ] caracter contenido en los corchetes
+[^ ] caracter no contenido en los corchetes
+[x-y] caracter contenido en el rango x-y
+
+\ escapar un caracter
+
+\< principio de palabra
+\> final de palabra (seguido por un signo de puntuación, un espacio o un salto)
+
+
+x|y el caracter x o el y
+x{m}  m x's consecutivas
+x{m,} m x's consecutivas o más
+x{m,n}  entre m y n x's
+
+
+Caracteres:
+[[:alnum:]] alfanuméricos (depende del idioma configurado)
+[[:alpha:]] alfabéticos (depende del idioma configurado)
+[[:lower:]] minúsculas (depende del idioma configurado)
+[[:upper:]] mayúsculas (depende del idioma configurado)
+[[:digit:]] dígitos
+[[:xdigit:]] dígitos hexadecimales
+[[:blank:]] espacio o tabulador
+[[:space:]] blancos (espacio, tabuladores, cambio de línea, retorno de carro...)
+[[:graph:]] no blancos
+[[:print:]] como graph, pero incluye el espacio en blanco
+[[:punct:]] de puntuación
+[[:cntrl:]] control
+
+
+grep      "ola|"  fichero        -- Para ver un fichero COMPLETO y  RESALTANDO una palabra
+
+/usr/share/dict/words        -- Diccionario de Palabras del ingles
+
+--¿Cuantas palabras contienen andy?
+grep andy /usr/share/dict/words | wc    
+138     138    1359
+
+--¿Palabras que contienen SMB con palabras en medio?
+grep '[sS].*[mM].*[bB]'  /usr/share/dict/words  
+grep '[sS].*[mM].*[bB]'  /usr/share/dict/words  |  egrep
+
+SMB = Servive Message Block  (Microsoft)
+SAMBA = viene porque un tio descifró el protocolo creado por Microsoft y lo bautizó asi
+
+
+grep options
+
+-i    INSENSITIVE a Mayusculas / minusculas    (caps / lowers
+-v    Coincidencias que NO CONTIENEN un patron
+-r    RECURSIVE
+    grep hostname -r /etc        -- Buscame el literal "hostname" en todos los ficheros/dirs que cuelgan de /etc
+-A  <number>    AFTER        Cuando encuentres una linea muestra x lineas posteriores.    
+-B  <number>    BEFORE    Cuando encuentres una linea muestra x lineas anteriores.
+-C  <number>    CONTEXT    Por delante y por detras.    Es una combinacion de las anteriores
+
+- Palabra numero 1 del crucigrama. Que tenga 7 chars exactos:
+egrep '[stop]*fi..$'  /usr/share/dict/words | egrep '\<.{7}\>' |more
+
+http://regexone.com        ==> Pagina para entrenar las Expresiones Regulares
+
+Chapter 3. vim Editor
+VIM  editor
+
+VI modo ventanas:
+CTRL + W
+CTRL + W   + V        Ventanas verticales
+CTRL + W   + N        Ventanas horizontales
+
+Para moverse entre ventanas
+CTRL + W +   (h , j , k , l )    Arriba , Abajo , Izda, Derecha
+
+¿como ejecuto algo en todas las ventanas?
+1. Afectando al buffer
+:qa        a = all
+
+vim -o  /tmp/man  /tmp/passwd        -o == Abro con ventanas HORIZONTALES
+vim -O  /tmp/man  /tmp/passwd        -O == Abro con ventanas VERTICALES
+
+vi solo tiene ventanas HORIZONTALES
+
+vim    permite plugins    (segun la extension del fichero, ponemos colores)
+Ejemplo:
+vim /etc/fstab
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
+#
+UID=9bf6b9f7-92ad-441b-848e-0257cbb883d1 /                       xfs     defaults        1 1    
+==> Pone en ROJO el primer campo si no es UUID
+
+VIM
+
+:split        ==> Divide el vim con otra vision en horizontal
+:vsplit        ==> Divide el vim con otra vision en Vertical
+
+:tabnew        ==> Abre una pestaña (como un browser)
+
+:e  fichero    ==> edita otro fichero
+
+:tabnew        ==> Cambiamos de pestaña
+        ó   CTRL+PgUP   y   CTRL+PgDown   
+
+:tabnext
+:tabonly
+:tabprevious
+:tabrewind
+:tabs
+:tab                                                                                                                                              
+:tabclose
+:tabdo
+:tabedit
+:tabfind
+
+Chapter 4.  Scheduling Future  Linux Task
+17-2-15
+at
+cron
+crony
+anacron
+
+at  :  Tareas que se van a ejecutar 1 VEZ EN EL TIEMPO
+Tecnica Pomodoro:    "dentro de 25 mins, centrate en 1  tarea
+Pomodoro:    es un reloj de cuenta atras italiano
+- Es un demonio (atd) con un conjunto de utilidades (at, atrm, ...)
+- atd  proporciona hasta 26 queues de la a -z
+
+at  now  +  25 min            -- Ejecuta dentro de 25 minutos
+at> echo "Fin del Pomodoro"
+at> notify-send "proceso finalizado" -t 0    -- Ejecuta un pop-up en el area de Notificacion
+at> <EOT>                
+CTRL + D = Finalizamos el batch de comandos
+job 1 at Tue Feb 17 09:45:00 2015
+
+atq    o tambien    
+at  -l            -- queue, examine or delete jobs for later execution
+1    Tue Feb 17 09:45:00 2015 a student
+2    Tue Feb 17 09:22:00 2015 a student
+3    Tue Feb 17 09:22:00 2015 a student
+
+La salida estandar de los comandos  at ==> van al correo del usuario que lo ha lanzado
+
+systemctl status atd.service
+atd.service - Job spooling tools
+   Loaded: loaded (/usr/lib/systemd/system/atd.service; enabled)
+   Active: active (running) since Tue 2015-02-17 09:14:21 CET; 15min ago
+ Main PID: 547 (atd)
+   CGroup: /system.slice/atd.service
+           └─547 /usr/sbin/atd -f
+
+Ejemplos:
+at teatime  tomorrow    (teatime=16:00)
+at noon  -4 days        (noon=12AM)
+at 5pm  august  3 2016
+
+atrm  1        -- Borrame el trabajo numero 1
+
+
+
+¿Que es el CRON?
+
+cron
+-Tiempo maximo = 1 año
+
+systemctl status crond.service
+crond.service - Command Scheduler
+   Loaded: loaded (/usr/lib/systemd/system/crond.service; enabled)
+   Active: active (running) since Tue 2015-02-17 09:14:21 CET; 43min ago
+ Main PID: 546 (crond)
+   CGroup: /system.slice/crond.service
+           └─546 /usr/sbin/crond -n
+
+SE PUEDE DES-HABILITAR el CRON  (siendo root) de UN USUARIO:
+/etc/cron.deny        -- Digo qué  usuarios/grupos les deniego
+/etc/cron.allow        -- Inicialmente no existe
+
+/var/spool/cron/        -- Aqui se graban los logs, pero nunca debemos acceder a pelo sino con crontab
+/var/spool/cron/student
+/var/spool/cron/root
+
+crontab   -l            -- listar
+crontab   -r            -- remove all jobs
+crontab   -e            -- editar
+crontab   <filename>        --  Borra todos los crones y los reemplaza con el fichero. Si no ponemos nada , usa la entrada stdin
+crontab  -u  <user>        -- Manejar el cron de un usuario (solo root)
+
+cat  /etc/crontab        -- Es util para ver el FORMATO
+SHELL=/bin/bash            -- Se ejecuta con shell bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin    -- Path donde buscará los comandos del cron
+MAILTO=root                -- Todos van al root y luego lo redirige al usuario
+
+# For details see man 4 crontabs
+
+# Example of job definition:
+# .---------------- minute (0 - 59)
+# |  .------------- hour (0 - 23)
+# |  |  .---------- day of month (1 - 31)
+# |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...
+# |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
+# |  |  |  |  |
+# *  *  *  *  * user-name  command to be executed
+
+Ejemplo 1:
+Minuto        Hora            Dia del mes    Mes                Dia de la semana        Comm
+*/15        9-14/2, 16-21/2        */15        1-7/3, nov            1-5/2,sat            echo xx
+0,15,30,45    9,10,11,12,14        dias=1,16,31    De enero a julio, cada 3 meses    De Lunes a Viernes cada 2 dias
+        16,17,18,19,20,21    (1+15+15)    + noviembre            + el sabado
+
+NOTA importante:
+Las horas/min  empiezan en 00
+Los dias empiezan el 1
+
+
+
+Ejemplo 2:    Este ejemplo es curioso
+Minuto        Hora        Dia del mes    Mes        Dia de la semana    Comm
+0        12        13        *        2            echo xxxx
+                Los dias 13            Martes
+Todo los dias 13 de mes se ejecuta
+Todos los martes del mes se ejecutan
+Y por supuesto todos los martes y 13
+
+En RHEL7, los  mails de root se redirigen al primer usuario que se ha creado en el sistema
+
+
+Scheduling  System cron Jobs
+Son definidos en 2 directorios:
+1    /etc/crontab        -- FICHERO DE CONFIGURACION general DEL SISTEMA
+2    /etc/cron.d        -- Contienen scripts ejecutables .No son ficheros de configuracion !!
+    - lo que pongamos aqui con chmod +x
+    Scripts ejecutados usando run-parts 
+
+    /etc/cron.d/cron.hourly        Job definidio en /etc/cron.d/0hourly
+/etc/cron.d/cron.dayly        Job definidio en /etc/anacron
+/etc/cron.d/cron.weekly        Job definidio en /etc/anacron
+/etc/cron.d/cron.monthly    Job definidio en /etc/anacron
+
+- Antes habia cosas por defecto en el cron del sistema
+- Ahora está vacío y lo que hay son ficheros en /etc/cron.d
+
+ll /etc/cron.d
+total 16
+-rw-r--r--. 1 root root 128 Jan 27  2014 0hourly
+-rw-r--r--. 1 root root 108 Mar 10  2014 raid-check
+-rw-r--r--. 1 root root 235 Jan 27  2014 sysstat
+-rw-r--r--. 1 root root 187 Jan 27  2014 unbound-anchor
+
+ cat /etc/cron.d/raid-check            -- Revisa los raids
+# Run system wide raid-check once a week on Sunday at 1am by default
+0 1 * * Sun root /usr/sbin/raid-check        -- Se ejecuta a la 1:00 todos los Domingos
+
+cat  /etc/cron.d/0hourly
+# Run the hourly jobs
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+01 * * * * root run-parts /etc/cron.hourly        --Se ejecuta a las hh:01 (o sea 1 vez cada hora)
+
+run-parts        Ejecuta TODO loque hay en el directorio que yo te indique
+Usage: run-parts [--list | --test] <dir>
+
+¿Que es el ANACRON?
+Recordemos     El crond es un demonio que se ejecuta  cada minuto
+ANACRON:    Es un proceso que se ejecuta en MAQUINAS QUE NO ESTAN SIEMPRE LEVANTADAS.
+- Se especifica segun PERIODOS DE TIEMPO (ej cada 30 dias) en vez de Horas/min concretos
+- El minimo tiempo de periodo es = 1 DIA
+- Por ejemplo los PC's el entorno de formacion
+    
+
+cat   /etc/anacrontab        -- FICHERO DE CONFIGURACION -ANACRON- DEL SISTEMA
+# /etc/anacrontab: configuration file for anacron
+# See anacron(8) and anacrontab(5) for details.
+SHELL=/bin/sh
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+# the maximal random delay added to the base delay of the jobs
+RANDOM_DELAY=45
+# the jobs will be started during the following hours only
+START_HOURS_RANGE=3-22
+#period in days   delay in minutes   job-identifier   command
+1    5    cron.daily        nice run-parts /etc/cron.daily        -- Cada 1 dia, esperate 5min a que arranque la maquina
+7    25    cron.weekly        nice run-parts /etc/cron.weekly    -- Cada 7 dias, esperate 25min  a que arranque la maquina
+@monthly 45    cron.monthly        nice run-parts /etc/cron.monthly  -- Cada 1 mes, esperate 45min a que arranque la maquina
+
+
+
+Gestionando Ficheros Temporales
+
+- Aqui cambia bastante en RHEL7.
+- Lo va a gestionar systemd-tmpfiles
+man      5     tmpfiles.d
+
+/tmp        - El cron limpiaba cada 10 dias
+/var/tmp/    - El cron limpiaba cada 30 dias
+/run        - Lo que hay aqui es volatil, no está en disco
+        - Aqui se montan los USB's
+
+df -hT
+Filesystem     Type      Size  Used Avail Use% Mounted on
+/dev/vda1      xfs        10G  3.1G  7.0G  31% /
+devtmpfs       devtmpfs  906M     0  906M   0% /dev
+tmpfs          tmpfs     921M  148K  921M   1% /dev/shm        -- Estan en RAM
+tmpfs          tmpfs     921M   17M  904M   2% /run            -- Estan en RAM
+tmpfs          tmpfs     921M     0  921M   0% /sys/fs/cgroup        -- Estan en RAM
+
+- Cuando la maquina rebota todo lo que está en tmpfs desaparece !!
+
+yum search tmpwatch            -- Antes en systemV se usaba esta herramienta para borrar viejos y sin usar
+Loaded plugins: langpacks
+=========================================== N/S matched: tmpwatch ===========================================
+tmpwatch.x86_64 : A utility for removing files based on when they were last accessed
+Name and summary matches only, use "search all" for everything.
+
+systemd-tmpfiles-setup        -- Es un servicio lanzado por systemd al arrancar el sistema
+El servicio ejecuta:
+systemd-tmpfiles    --create    --remove
+Este comando lee ficheros de configracion de:
+/usr/lib/tmpfiles.d/*.conf    - Principal
+/run/tmpfiles.d/*.conf
+/etc/tmpfiles.d/*.conf
+
+- Cualquier fichero/directorio marcado para la eliminacion será eliminado
+- Cualquier fichero/directorio marcado para la creacion será creado
+
+Tambien hay un systemd timer  unit a intervalos regulares que limpia:
+systemd-tmpfiles    --clean
+
+systemctl     status     systemd-tmpfiles-clean.timer        --- Cada cuanto tiempo queiro que se ejecute
+systemd-tmpfiles-clean.timer - Daily Cleanup of Temporary Directories
+   Loaded: loaded (/usr/lib/systemd/system/systemd-tmpfiles-clean.timer; static)
+   Active: active (waiting) since Tue 2015-02-17 09:14:20 CET; 3h 23min ago
+     Docs: man:tmpfiles.d(5)
+           man:systemd-tmpfiles(8)
+
+Feb 17 09:14:20 localhost systemd[1]: Starting Daily Cleanup of Temporary Directories.
+Feb 17 09:14:20 localhost systemd[1]: Started Daily Cleanup of Temporary Directories.
+
+
+cat /usr/lib/tmpfiles.d/tmp.conf        --1er fichero de conf
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+# See tmpfiles.d(5) for details
+
+# Clear tmp directories separately, to make them easier to override
+d /tmp 1777 root root 10d
+d /var/tmp 1777 root root 30d
+
+# Exclude namespace mountpoints created with PrivateTmp=yes
+x /tmp/systemd-private-*
+x /var/tmp/systemd-private-*
+X /tmp/systemd-private-*/tmp
+X /var/tmp/systemd-private-*/tmp
+
+Ficheros de configuracion de los temporales:
+1    /usr/lib/tmpfiles.d/*.conf    - No debemos tocarlo
+                    - Es el que menos prorioidad . Si existen otros ficheros con el mismo nombre serán
+ usados los otros directorioS 2 Y 3
+
+2    /run/tmpfiles.d/*.conf
+
+3    /etc/tmpfiles.d/*.conf
+
+Clasica practica:
+Crear un directorio de temporales en  /run/veryveryvolatile
+Cuando se lanze systemd-tmpfiles  --create cualquier  fichero mas viejo de 5 sg será borrado
+1)
+vim /etc/tmpfiles.d/veryveryvolatile.conf
+
+2)
+d  /run/veryveryvolatile 1777 root root 5s
+
+3)
+     systemd-tmpfiles --create            -- Al hacer esto lee de /etc/tmpfiles.d/   y 
+                            -- CREA el directorio /run/veryveryvolatile
+
+
+
+
+
+PARA QUE FUNCIONE el notify-send  (POP-UP en el scritorio de GNOME, abajo en la zona de notificaciones)
+
+1) Añadimos al .bashrc:
+mkdir ~/.dbus &>/dev/null
+touch ~/.dbus/Xdbus
+chmod 600 ~/.dbus/Xdbus
+env | grep DBUS_SESSION_BUS_ADDRESS > ~/.dbus/Xdbus
+echo 'export DBUS_SESSION_BUS_ADDRESS' >> ~/.dbus/Xdbus
+
+2) Metemos en el cron de student:
+38 13 * * 1-5 export DISPLAY=:0; source ~student/.dbus/Xdbus; /usr/bin/notify-send "Descanso YAYAYAYA" -t 0
+
+
+
+
+18-2-15
+Chapter 5.    Processes.    Managing Priority
+
+
+Pasar de 1er. plano a 2º plano    
+1º)    CTRL + Z    =    Interrumpe un proceso shell
+2º)    jobs
+3º)    bg  1        = Lo pongo en segundo plano
+4º)    fg  1        = Lo pongo en primer plano, bloqueo la terminal
+
+ps    auxwf        f  = sale el arbol de precedencia = como un proceso depente de otro
+            u = userlist, a = all ,
+kiosk_am  2139  0.0  0.0   8456   716 ?        S    09:03   0:00  \_ gnome-pty-helper
+kiosk_am  2140  0.0  0.0 116256  2900 pts/0    Ss   09:03   0:00  \_ bash
+kiosk_am  4155  0.0  0.0 123512  1532 pts/0    R+   09:18   0:00      \_ ps auxwf
+
+xeyes  &        -- Lanza en background colgando del proceso de la shell
+nohup  xeyes  &    -- Lanza en background colgando del proceso 1
+
+disown            -- Hace un que un proceso no dependa de su  shell .. sino que dependa del 1 !!
+
+pidof xeyes        -- Veo los PID de los procesos "xeyes"
+2861 2860 2851 2382
+
+ kill -l            -- Lista de señales del sistema = Hay 64
+
+ 1) SIGHUP         2) SIGINT         3) SIGQUIT         4) SIGILL         5) SIGTRAP
+ 6) SIGABRT         7) SIGBUS         8) SIGFPE         9) SIGKILL        10) SIGUSR1
+11) SIGSEGV        12) SIGUSR2        13) SIGPIPE        14) SIGALRM    15) SIGTERM
+16) SIGSTKFLT        17) SIGCHLD        18) SIGCONT        19) SIGSTOP    20) SIGTSTP
+21) SIGTTIN    22) SIGTTOU    23) SIGURG    24) SIGXCPU    25) SIGXFSZ
+26) SIGVTALRM    27) SIGPROF    28) SIGWINCH    29) SIGIO    30) SIGPWR
+31) SIGSYS    34) SIGRTMIN    35) SIGRTMIN+1    36) SIGRTMIN+2    37) SIGRTMIN+3
+38) SIGRTMIN+4    39) SIGRTMIN+5    40) SIGRTMIN+6    41) SIGRTMIN+7    42) SIGRTMIN+8
+43) SIGRTMIN+9    44) SIGRTMIN+10    45) SIGRTMIN+11    46) SIGRTMIN+12    47) SIGRTMIN+13
+48) SIGRTMIN+14    49) SIGRTMIN+15    50) SIGRTMAX-14    51) SIGRTMAX-13    52) SIGRTMAX-12
+53) SIGRTMAX-11    54) SIGRTMAX-10    55) SIGRTMAX-9    56) SIGRTMAX-8    57) SIGRTMAX-7
+58) SIGRTMAX-6    59) SIGRTMAX-5    60) SIGRTMAX-4    61) SIGRTMAX-3    62) SIGRTMAX-2
+63) SIGRTMAX-1    64) SIGRTMAX    
+
+kill   2382        señal=15    Acaba ordenadamente
+kill  -s 9 2382        -s = signal    
+kill  - 9 2382        señal=9    Muerte incondicional
+            señal=15    SIGSTOP    
+            señal=18    Despertar
+            señal=19    Dormir    Ctrol+Z
+
+man 7 signal        == Para ver lo que es cada señal
+
+MATAR TODOS LOS PROCESOS POR EL NOMBRE
+killall        -- Le digo el nombre del proceso
+killall      -s 9 xeyes            -s = signal
+kill      -s 9 %(pidof  xeyes)
+
+¿COMO MATO UNA VENTANA QUE NO SE CUAL ES?
+xkill        Pincho una ventana y mato su proceso
+BOTON DERECHO=Anula el disparo
+
+
+xprop        Pincho una ventana y me sale sus propiedades
+    Icon (32 x 32):
+                                    
+                   ░▒▒░░░░░░░░░▒▒▒▒▒▒▒▒▒▒▒▒▒      
+     ░▒▒▒░░░░░░░▒▒▒▒▒▒▒▒▒▒▓▓▒░    ░
+     ░▒▒▒░░░░▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▒     ▒
+     ░▒▒▒░░░▒▒▒▓▒▒▒▒▒▒▓▓▓▓▓▓▒    ░▒
+     ░▒▒▒▒░▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▒    ░░
+     ░▒▒▒▒▒▒▒░░▒▒▓▓▒▒▒▒▓▓▓▓▓▒    ░  
+     ░▒▒▒▒▒▒▒░░░░▒░░░░░▓▓▓▓▒░░   ░  
+      ▒▒▒▒▒▒▒▒░░░░░░▒▒▒▓▓▓▓▒░░ ░░░  
+      ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓░░░░░░░  
+      ░▒▒▒▒▒▒▒░░▒▓▓▓▓▓▓▓▓▓▒░░░░░░░  
+       ▒▒▒▒▒▒▒▒▒░▒▒▓▓▓▓▓▒▒░░░░░░▒░  
+
+
+
+_NET_WM_SYNC_REQUEST_COUNTER(CARDINAL) = 41944291
+_NET_WM_WINDOW_TYPE(ATOM) = _NET_WM_WINDOW_TYPE_NORMAL
+_NET_WM_USER_TIME_WINDOW(WINDOW): window id # 0x28004e2
+WM_CLIENT_LEADER(WINDOW): window id # 0x2800001
+_NET_WM_PID(CARDINAL) = 7590
+WM_LOCALE_NAME(STRING) = "en_US.utf8"
+WM_CLIENT_MACHINE(STRING) = "foundation4.ilt.example.com"
+WM_NORMAL_HINTS(WM_SIZE_HINTS):
+        program specified minimum size: 1 by 133
+        program specified maximum size: 32767 by 32767
+        window gravity: NorthWest
+WM_PROTOCOLS(ATOM): protocols  WM_DELETE_WINDOW, WM_TAKE_FOCUS, _NET_WM_PING, _NET_WM_SYNC_REQUEST
+WM_CLASS(STRING) = "Navigator", "Firefox"
+WM_ICON_NAME(STRING) = "RH - 134 - Documentos de Google - Mozilla Firefox (Private Browsing)"
+_NET_WM_ICON_NAME(UTF8_STRING) = "RH - 134 - Documentos de Google - Mozilla Firefox (Private Browsing)"
+WM_NAME(STRING) = "RH - 134 - Documentos de Google - Mozilla Firefox (Private Browsing)"
+_NET_WM_NAME(UTF8_STRING) = "RH - 134 - Documentos de Google - Mozilla Firefox (Private Browsing)"
+
+
+
+
+Virtual Mem    =    El TOTAL
+Resident Mem    =    Lo que está en RAM
+Shared Mem    =    Son las librerias a las que apunta un proceso
+Memory        =    Lo que ocupa relmente el proceso
+
+ps   auxw  | head -n 3
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.3  52328  6492 ?        Ss   09:04   0:01 /usr/lib/systemd/systemd 
+root         2  0.0  0.0      0     0 ?        S    09:04   0:00 [kthreadd]
+
+VSZ = Virtual Mem
+RSS = Resident Mem
+
+
+top
+Cuando lanzamos un proceso siempre lo lanza con prioridad 20
+un valor 20 en top == equivale a 0 en NICE
+
+NICE
+- Niveles NICE =   -20 .. 19
+- El concepto de nice, es : un proceso que coge pocos recursos (cpu, memoria)
+- Un proceso  normal puede subir el NICE pero despues no puede bajarlo!!
+- Para bajar el NICE hay que tener permisos de root  (o sudo de root)
+
+nice  -n  17  xeyes
+
+Comando pv
+pv        -- Permitte instalar una barra de progreso
+        -- Viene en CD supletorio opcional
+        dd  if=/dev/zero  |  pv  |  dd  of=/dev/sdb1
+
+DISCOS
+
+Aplication - Utility - Disks :
+
+
+
+Benchmark = Pruebas de rendimiento
+
+En ext3 y ext4  los discos que esten por encima del 90% --> pierden mucho rendimiento
+
+Pagina interesante para ver las velociadades:
+http://en.wikipedia.org/wiki/List_of_device_bit_rates
+
+
+
+COMO TUNEAR UN DISCO NORMAL (y SSD)
+
+Hay una GUIA de TUNNING en la DOC. Oficial de RedHat en la WEB
+
+1) TRUCO-1: Deshabilitar el atime en los ficheros, con RHEL5 y RHEL6
+-Solo con este truco se consigue mejorar un 20%
+-En RHEL7, ya está controlado
+
+relatime: "No actualices el atime, a menos que":
+    - Se haya cambiado algun metadato
+    - Ha pasado un dia como maximo
+
+cat /etc/fstab
+#
+# /etc/fstab
+# Created by anaconda on Wed May  7 01:22:57 2014
+#
+# Accessible filesystems, by reference, are maintained under '/dev/disk'
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
+#
+UUID=9bf6b9f7-92ad-441b-848e-0257cbb883d1 /                       xfs     defaults, noatime        1 1 
+
+
+man  mount
+relatime
+Update inode access times relative to modify or change time.  Access time is only updated if the previous access time was 
+earlier  than the  current  modify  or  change time. (Similar to noatime, but doesn't break mutt or other applications that need to
+know if a file has been read since the last time it was modified.)
+
+Since Linux 2.6.30, the kernel defaults to the behavior provided by this option (unless noatime was   specified),  and  the
+strictatime  option  is required to obtain traditional semantics. In addition, since Linux 2.6.30, the file's last access time is
+always  updated  if it  is more than 1 day old.
+
+2) TRUCO-2:    Por defecto, la operaciones WRITE hazlas cada 5 segundos
+    Usa el algoritmo ELEVATOR (el de un ascensor)
+vim   /etc/fstab
+UUID=9bf6b9f7-92ad-441b-848e-0257cbb883d1 /                       xfs     defaults,commit=30        1 1
+
+3) TRUCO-3:    Controlar las operaciones WRITE
+
+cat     /sys/block/vda/queue/scheduler        -- Esquema las operaciones de escrituras
+noop [deadline] cfq
+
+    cfq     = es el bueno
+    noop     = no ordena las escrituras en el disco
+    deadline= Las operaciones de escrituras van con un tiempo maximo (fecha tope)
+
+- Es un fichero en memoria pero puedo hacer
+    cat /sys/block/vda/queue/scheduler
+noop [deadline] cfq
+
+echo cfq > /sys/block/vda/queue/scheduler
+
+cat /sys/block/vda/queue/scheduler        -- Está en RAM, el kernel lo vuelve a tocar
+noop deadline [cfq]
+
+- En MV's , normalmente se pone "noon"
+
+[root@server4 ~]# tuned-adm  list
+Available profiles:
+- balanced
+- desktop
+- latency-performance
+- network-latency
+- network-throughput
+- powersave
+- sap
+- throughput-performance
+- virtual-guest
+- virtual-host
+Current active profile: virtual-guest
+
+[root@server4 ~]# tuned-adm  profile powersave        -- Cambia el perfil de la maquina para el rendimiento
+[root@server4 ~]# tuned-adm  list
+Available profiles:
+- balanced
+- desktop
+- latency-performance
+- network-latency
+- network-throughput
+- powersave
+- sap
+- throughput-performance
+- virtual-guest
+- virtual-host
+Current active profile: powersave
+
+cd   /usr/lib/tuned/
+[root@server4 tuned]# ll
+total 16
+drwxr-xr-x. 2 root root    23 May  7  2014 balanced
+drwxr-xr-x. 2 root root    23 May  7  2014 desktop
+-rw-r--r--. 1 root root 12147 Nov  6  2013 functions
+drwxr-xr-x. 2 root root    23 May  7  2014 latency-performance
+drwxr-xr-x. 2 root root    23 May  7  2014 network-latency
+drwxr-xr-x. 2 root root    23 May  7  2014 network-throughput
+drwxr-xr-x. 2 root root    39 May  7  2014 powersave
+-rw-r--r--. 1 root root   520 Mar  7  2014 recommend.conf
+drwxr-xr-x. 2 root root    39 May  7  2014 sap
+drwxr-xr-x. 2 root root    23 May  7  2014 throughput-performance
+drwxr-xr-x. 2 root root    23 May  7  2014 virtual-guest
+drwxr-xr-x. 2 root root    23 May  7  2014 virtual-host
+
+tuned    :    Herramienta de tunning a partir de RHEL6
+tuned
+2015-02-18 13:29:55,479 INFO     tuned.daemon.application: dynamic tuning is globally disabled
+2015-02-18 13:29:55,479 INFO     tuned.daemon.daemon: using sleep interval of 1 second(s)
+2015-02-18 13:29:55,479 INFO     tuned.profiles.loader: loading profile: virtual-guest
+2015-02-18 13:29:55,484 INFO     tuned.daemon.controller: starting controller
+2015-02-18 13:29:55,484 INFO     tuned.daemon.daemon: starting tuning
+2015-02-18 13:29:55,488 INFO     tuned.plugins.base: instance disk: assigning devices vda, vdb
+2015-02-18 13:29:55,489 INFO     tuned.plugins.base: instance cpu: assigning devices cpu0
+2015-02-18 13:29:55,493 ERROR    tuned.utils.commands: Executing x86_energy_perf_policy error:
+2015-02-18 13:29:55,493 WARNING  tuned.plugins.plugin_cpu: your CPU doesn't support MSR_IA32_ENERGY_PERF_BIAS, ignoring CPU energy performance bias
+2015-02-18 13:29:55,508 ERROR    tuned.utils.commands: Executing cpupower error: analyzing CPU 0:
+2015-02-18 13:29:55,508 ERROR    tuned.plugins.plugin_cpu: could not get current governor on cpu 'cpu0'
+2015-02-18 13:29:55,508 ERROR    tuned.utils.commands: Reading /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors error: [Errno 2] No such file or directory: u'/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors'
+2015-02-18 13:29:55,508 INFO     tuned.plugins.plugin_cpu: ignoring governor 'performance' on cpu 'cpu0', it is not supported
+
+PTP = Precissoin Time Protocol    = es un protocolo que sustituye a NTP, es mas rápido
+
+4) TRUCO 4:    nobarrier
+"Esto es como poner los DISCOS en modo UDP"
+No comprueba la info. cuando escribe en disco
+/home    /home                  xfs     defaults,nobarrier        1 1
+
+barrier=0 / barrier=1 / barrier / nobarrier
+              This enables/disables the use of write barriers in the jbd code.  barrier=0 disables, barrier=1 enables.  
+This also requires an IO stack which can support barriers, and if jbd gets an error on a barrier write, it will disable again with a warning. Write  barriers  enforce proper  on-disk  ordering of journal commits, making volatile disk write caches safe to use, at some performance penalty.  If your disks are battery-backed in one way or another, disabling barriers may safely improve performance. The mount options  "barrier"  and  "nobar‐rier" can also be used to enable or disable barriers, for consistency with other ext4 mount options.
+              The ext4 filesystem enables write barriers by default.
+
+DISCOS  SSD:
+
+1) DIrectorio /tmp  en RAM
+
+El commit=30    vale para todas las particiones excepto para los LOGs
+Los LOGs se escriben de dorma sincrona en  /var/log/messages
+Los LOGs generan mucho estres de DISCO
+A veces se ponen DISCO exclusivamente para  /var/log
+
+none    /tmp    tmpfs    size=1%, defaults    1    1    ==> El /tmp lo pongo en la memoria
+                                ==> Le digo que use el 1% del total de RAM
+
+luego tengo que hacer:
+mount  /tmp
+
+
+2) Quitar el JOURNAL
+
+Con el Journal puedo ver que ha psado si se ha ido de luz
+Pero hago 3 operaciones: escritura, log y comprobacion
+Si deshabilito el JOURNAL en un sistema xfs, me quedo solo con 1 operacion (la de escritura)
+- Se puede hacer que el JOURNAL escriba en otro disco a parte.
+
+
+19-2-15
+Chapter 6.     ACL's
+
+Orden de aplicacion de los PERMISOS
+
+Cat / Permisos
+U
+G
+O
+Standard
+1º
+3º
+5º
+ACL
+2º
+4º
+
+
+
+CUANDO HAY UNA COINCIDENCIA SEGUN EL ORDEN DE LA TABLA (tanto STANDARD como ACL) ==> SE APLICAN LOS PERMISOS AL fichero/directorio Y DEJA DE MIRAR
+POSIX.    Access Control Lists    (ACLs)
+
+Hasta ahora teniamos , usuarios. grupos y others
+Ahora vamos a afinar (granular mas fino)
+POSIX:    Familia de estandar para Sistemas Operativos
+xfs y ext4 son compatibles con POSIX
+Vamos a montar Filesystems con o sin ACLs
+
+man mount    (busco xfs)
+    - Vemos cosas de ext2, ext3, ext4
+- No vemos nada de xfs !!! ¿porque?, porque  xfs siempre tiene activas las  ACLs!!
+
+man mount    (busco defaults)
+defaults
+                  Use default options: rw, suid, dev, exec, auto, nouser, and async
+
+tune2fs  -l  /dev/vdb1  |  grep ^Default
+Default  mount options:    user_xattr  acl        == By default estan includas ACLs en RHEL7 con ext4
+
+Caracteristicas ACL's:
+
+- Un directorio con ACLs puede ser o no inherit  (heredable)
+
+df -h
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/vdb1        93M  1.6M   85M   2% /datos            (hemos creado un FS ext4)
+
+setfacl -m   u:student:7   /datos/fichero                -m = modificar
+
+ll fichero        -- - Si hay ACLs cuando hacemos un ls -l  no dice la verdad !!!
+-rw- rw- r--+ 1 root root 0 Feb 19 09:36 fichero        + = Tiene ACL
+-rw- rw- r--+ 1                         ==> Me dice los permisos MAXIMOS que puede tener fichero
+user:    Las mismas que el standard user:  rwx
+group:    Muestra la mascara actual de la ACL !! no es el group-owner !!
+    Cuando hacemos chmod en un fihcero con ACLs ==> no cambiamos el group-owner sino la MASCARA ACL  !!
+others:  Las mismas que estandard others:  r--
+    Se refiere a otros UIDs o GUIDs
+
+getfacl  fichero
+# file: fichero
+# owner: root
+# group: root
+user::rw-
+user:student:rwx
+group::r--            -- Ojo el GRUPO SOLO PUEDE READ !!! (sin embargo el ls -l me dice   rw, no confundirse)
+mask::rw-
+other::r--
+
+useradd visitor    
+setfacl -m u:visitor:rw fichero        --Pongo una ACL a visitor
+getfacl fichero
+# file: fichero
+# owner: root
+# group: root
+user::rw-
+user:student:rwx
+user:visitor:rw-
+group::r--
+mask::rwx                -- LA MASCARA es un FILTRO
+other::r--
+
+setfacl -m  m:6 fichero                m = mask ==> pongo la mask=6= 110
+getfacl fichero
+# file: fichero
+# owner: root
+# group: root
+user::rw-
+user:student:rwx        #effective:rw-        Al cambiar la mascara, cambian los permisos efectivos de student
+user:visitor:rw-
+group::r--
+mask::rw-
+other::r--
+
+useradd teacher
+setfacl -m u:teacher:rwx fichero
+chmod g-x fichero                Ojo: estoy cambiando la mascara, no el group owner!
+getfacl fichero
+# file: fichero
+# owner: root
+# group: root
+user::rw-
+user:student:rwx        #effective:rw-
+user:visitor:rw-
+user:teacher:rwx        #effective:rw-
+group::r--
+mask::rw-
+other::r--
+
+
+SETFACL    Set File ACL
+setfacl        Permite AÑADIR o MODIFICAR ACLs
+
+setfacl    -m    ugo:[user/blank]:rwx    fichero
+
+setfacl      -m          u:visitor:r           fichero
+        modificar    user:visitor:read        fichero
+
+setfacl      -x          u:visitor           fichero
+        exclude        user:visitor        de fichero
+
+setfacl      -m          g:student:rw        fichero
+        modificar    grupo:student:rw    fichero
+
+La mask afecta a todos los usuarios excepto al owner del fichero
+Las ACLs de un fichero solo puede modificarlo el propietario o root.
+
+- A partir de RHEL6 ==>  los tar y compress etc... llevan ACLs !!
+- FAT y NTFS no son compatibles con POSIX.    Si se copia un fichero a un FS con FAT o NTFS se pierden las ACLs !!
+- rsycn, al ser herramienta del sistema,  maneja ACLs y SElinux
+- BACULA, AMANDA :  manejan selinux y ACLs
+
+EJEMPLO extraño:    TODO EL MUNDO PUEDE LEER ESTE FICHERO EXCEPTO student
+getfacl fichero
+# file: fichero
+# owner: root
+# group: root
+user::rw-
+user:student: - - -        En cuanto RH lee esto: YA NO DEJA ACCEDER A "student", no lee mas
+user:visitor:rw-
+group::r--
+group::student: rwx        Aunque aparezca rwx al grupo "student" , prevalece lo anterior
+mask::rw-
+other::r--
+
+
+- Si un usuario pertenece a varios GRUPOS:  prevalece el GRUPO que mas accesos tenga
+
+- Si no entra por GRUPO, ya se va al others
+
+DIRECTORIOS con ACLs
+mkdir prueba
+ll -d prueba/
+drwxr-xr-x. 2 root root 6 Feb 19 10:28 prueba/
+
+Recordar que en un DIRECTORIO los rwx son :
+r     puedo ver lo que hay dentro del DIR        Puedo hacer un ls    (es lo que contiene byte a byte el directorio)
+w   puedo crear/mod/borrar ficheros dentro DIR    Puedo hacer un cp, rm, vi
+x    puedo entrar   pasar a traves del DIR        Puedo hacer cd        cd ../DIR/..
+
+    
+DEFAULT : Permisos Heredables
+- Cuando creo ffichero/directorio  dentro de un directorio "inherit" heredará sus ACLS
+- Solo se pueden dar "inherit" a DIRECTORIOS   (no a ficheros obviamente)
+
+setfacl    -m    d:ugo:[user/blank]:rwx    fichero
+setfacl      -m      d:u:visitor:rwx            directorio/
+    modificar    default:user:visitor:rwx
+- A partir de ahora, si creo ficheros o directorios, heredarán las ACLs del directorio
+
+getfacl prueba/
+# file: prueba/
+# owner: root
+# group: root
+user::rwx
+group::r-x
+other::r-x
+(TODO  lo que ponga DEFAULT se  hereda para cuando se creen filies en el directorio)
+default:user:visitor:rwx        el group
+default:user::rwx            rw en nuevos ficheros y execute  en nuevos directorios
+default:group::r-x        Esto no afecta al PROPIO DIRECTORIO
+default:mask::rwx
+default:other::r-x
+mask: rw-
+
+MASK:
+La mascara tiene una doble funcionalidad: LIMITA PERMISOS Y ENMASCARA QUE OTROS VEAN LOS PERMISOS.
+Cuando hagamos un chmod al directorio ==> OJO: modificarmos la MASK, no el group-owner!!
+Ejemplo:
+    chmod  g=    /directorio    ==> Afecta a todo lo que cuelga debajo (excepto el propietario)
+    chmod  g=    fichero        ==> Afecta a todo lo que cuelga debajo (excepto el propietario)
+
+chmod. sin embargo, no afecta a la mascara EFECTIVA (eso tiene que hacerse con setfacl)
+
+
+setfacl  -b  fichero    BORRA todas las ACLs del fichero
+            Ahora si que prevalece todo lo que pone en rwx  rwx rwx
+
+
+
+Active Directory
+FreeIPA        Identity Profile Agen    CENTOS
+IdM                        Viene dentro de RHEL7
+
+PRODUBAN    Gestiona 15.000 maquinas RHEL
+        Se ha metido en Linux
+
+ROCHE        Farmaceutica Suiza
+        CPD mundial en Madrid
+        Tienen 30-40 personas certificadas
+        Tienen:    Sattellite, ClusterSuite
+
+DECATHLON, WORTEN, LEROY MERLIN:    Piden frances
+
+- EN UNIX/LINUX no se puede crear un fichero ejecutable DIRECTAMENTE. 
+- Es un standard
+Hay crearlo.                touch fichero
+Hay que darles permisos ejecucion.    chmod +x fichero
+
+find  /  -nouser    ==Busca ficheros "huerfanos", o sea ficheros cuyo dueño se ha borrado
+        == cuando hacemos ls -l pone el UID:GUID
+
+Resumen:
+getfacl    file.txt                View file    ACL
+getfacl    directorio            View directoy ACL
+getfacl  -R directorio            List the ACLs of all files and directories recursively.
+getfacl  fichero  |  setfacl  --set-file=- resumen.cls
+                    Copiamos la ACLs de fichero hacia resumen.acls
+setfacl  -b  fichero            Borrar ACLS de fichero
+
+
+20-2-15
+Chapter 7. SELinux
+Security Enhanced Linux
+Dan Walsh fue quien lo inventó
+
+-Se metio a partir de RHEL4 (dio problemas)
+RHEL 5        PERMISIVE
+RHEL >6     ENFORCING    Desde RHEL6 va muy bien
+-Esto viene de la NSA    Agencia Seguridad Americana
+-Es una capa embebida dentro del KERNEL, (desde la 2.6.2)
+-Va dentro de  todas las versiones de Lunix: por ejemplo Android 
+-Es lo primero que hace antes de levantar los servicios de: red, http, ftp.etc..
+-Cuando se pasa a DISABLE, siempre hay que hacer REBOOT
+-Reglas básicas:
+    1)     Nunca poner SELinux a DISABLED
+    2)    En todo caso ponerlo a PERMISIVE
+- Perfiles de SELinux:  http, ftp, JBoss, Nagios, ....
+
+cat   /etc/sysconfig/selinux    -- Fich. config. SELINUX
+(en RHEL8 desaparecerá)    
+
+# This file controls the state of SELinux on the system.
+# SELINUX= can take one of these three values:
+#     enforcing - SELinux security policy is enforced.
+#     permissive - SELinux prints warnings instead of enforcing.
+#     disabled - No SELinux policy is loaded.
+SELINUX=enforcing        -- Para el arranque
+# SELINUXTYPE= can take one of these two values: 
+#     targeted - Targeted processes are protected,
+#     minimum - Modification of targeted policy. Only selected processes are protected.
+#     mls - Multi Level Security protection.    (se puede activar pero RedHat no da support)
+SELINUXTYPE=targeted    -- Es el unico que soporta RH
+                -- mls es para NSA (secret, topsecrete, ...). Ambito miliar: muy estricto
+
+mcs:    1 UNICO CONTEXT
+- Nos centramos en el contexto tipo TYPE (mcs), es decir, ENJAULAR los servicios (APLICACIONES)
+
+mls:    MULTI-CONTEXT
+User
+Rol
+Sensitivy
+Category
+
+En SELINUX la seguridad afecta a todo: Files, process, directory  y ports
+
+POLICY ¿que hace? ¿que es?
+- Controla cómo un  contexto ORIGEN acede a un Contexto DESTINO
+
+
+
+COMANDOS
+getenforce    -- Para saber el estado de selinux del sistema
+Enforcing
+
+
+setenforce    -- PARA CAMBIAR EN CALIENTE :    De enforcing --> Permisive  ó  Permisive -->   enforcing 
+setenforce
+usage:  setenforce [ Enforcing | Permissive | 1 | 0 ]
+
+Ejemplo:
+setenforce 0    -- Pongo a Permissive
+
+getenforce
+Permissive
+
+
+SELUNIX es una herramienta de LABELING 
+    - Va a añadir una label a todo los objects: users, procesos, directorios, sockets,...
+    - Hay unas rules que van a decir qué objects van a poner acceder a otros objects
+    - Esto lo controla una BBDD de SELinux que se llama:  AVC (Access Vector Cach)
+    - Esta BBDD de SELinx se pùede modificar
+
+[root@server4 ~]# ls -l
+total 12
+-rw-------. 1 root root 8619 May  7  2014 anaconda-ks.cfg        -- El punto (.) significa que tiene SELinux context
+
+ls  -Z            -Z = Ver el context de SELinux
+-rw-------. root root system_u:    object_r:     admin_home_t:      s0     anaconda-ks.cfg
+                         admin_home_t == es el LABEL type, en este caso de
+                        Este 3er campo es donde nos vamos a fijar
+
+system_u    =    USER =perfil de SELinux de Usuario
+object_r    =    ROL
+admin_home_t    =    TYPE (contexto o etiqueta)
+s0        =    Sensibilidad    (aqui no se usa)    Nivel de confidencialidad
+
+
+- Cuando se pasa de modo Disabled a Enforicing o Permissive ==> Se hace un RE-LABELING de todos los ficheros
+
+
+
+RESTAURAR un CONTEXTO
+restorecon  -v  /var/www/html/index.htmtl    -- Restaura para este fichero el contexto segun la BBDD de SELinux
+-v =  show changes in file labels        -- En este caso le pone el contexto:  httpd_sys_content_t
+
+restorecon  -FRv   /var/www/html/index.htmtl    - Idem y Forzamos y Recursive a todos el directorio
+F = Forced    R=Recursivo  
+
+Ojo con hacer mv    cp -a     cp -v     rsync    == Porque podemos modificar el CONTEXTO de un fichero
+
+
+PAGINAS MAN de SELinux
+
+apropos _selinux
+pam_selinux (8)      - PAM module to set the default security context
+
+yum provides *httpd_selinux*                            --Qué paquetes llevan este fichero
+Loaded plugins: langpacks
+rhel_dvd/filelists_db                                                                          | 3.0 MB  00:00:00     
+selinux-policy-devel-3.12.1-153.el7.noarch : SELinux policy devel        -- A partir de RHEL7 !!
+Repo        : rhel_dvd
+Matched from:
+Filename    : /usr/share/man/man8/httpd_selinux.8.gz
+Filename    : /usr/share/man/ru/man8/httpd_selinux.8.gz
+
+yum install -y selinux-policy-devel-3.12.1-153.el7.noarch            -- Instalo la ayuda de SELINUX
+
+apropos _selinux
+pam_selinux (8)      - PAM module to set the default security context        --Sigue habiendo 1 !!
+
+mandb                -- Actualizo la BBDD
+apropos _selinux  |  wc    -- Ahora ya si me actualiza
+    778    8563   67035    --> 778 paginas de manual de SELINUX
+
+
+
+
+seinfo -u        -- Herramienta que Muestra todos los usuarios de SELinux
+
+Users: 8            -- Hay 8 users
+   sysadm_u
+   system_u
+   xguest_u
+   root
+   guest_u
+   staff_u
+   user_u
+   unconfined_u        --
+
+
+yum provides *seinfo
+Loaded plugins: langpacks
+rhel_dvd                                                                                       | 4.1 kB  00:00:00     
+(1/2): rhel_dvd/group_gz                                                                       | 134 kB  00:00:00     
+(2/2): rhel_dvd/primary_db                                                                     | 3.4 MB  00:00:00     
+rhel_dvd/filelists_db                                                                          | 3.0 MB  00:00:00     
+yum setools-console-3.3.7-46.el7.x86_64 : Policy analysis command-line tools for SELinux
+Repo        : rhel_dvd
+Matched from:
+Filename    : /usr/bin/seinfo
+
+yum install -y setools-console-3.3.7-46.el7.x86_64
+
+cat     /etc/selinux/targeted/seusers
+system_u:system_u:s0-s0:c0.c1023
+root:unconfined_u:s0-s0:c0.c1023
+__default__:unconfined_u:s0-s0:c0.c1023
+
+vim     /etc/selinux/targeted/seusers
+system_u:system_u:s0-s0:c0.c1023
+root:unconfined_u:s0-s0:c0.c1023
+__default__:unconfined_u:s0-s0:c0.c1023
+invitado:xguest_u:s0-s0:c0.c1023        -- Añadimos un USER SELinux
+                        -- xguest: es un usuario grafico invitado con permisos muy limitados
+
+useradd invitado
+su - invitado
+id
+uid=1001(invitado) gid=1001(invitado) groups=1001(invitado) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+
+
+seinfo -r        ROLES
+
+Roles: 14
+   auditadm_r
+   dbadm_r
+   guest_r
+   staff_r
+   user_r
+   logadm_r
+   object_r
+   secadm_r
+   sysadm_r
+   system_r
+   webadm_r
+   xguest_r
+   nx_server_r
+   unconfined_r
+
+seinfo -t        TIPOS DE CONTEXTO
+seinfo -t|wc -l
+4448            -- Hay muchos Tipos d eCon
+seinfo -t|grep http| wc -l
+192
+seinfo -t|grep ftp| wc -l
+30
+
+REGLAS
+    "que Apache pueda accerder al puerto 80"
+    "cuando creamos algo en /root, ponle al admin_home_t"
+
+semanage fcontext      REGLAS
+semanage fcontext -l  |   wc -l            -- Hay 5617 reglas
+5617
+
+Ej:
+semanage fcontext -l| grep /root | grep ssh
+/root/\.shosts                                     all files          system_u:object_r:ssh_home_t:s0
+/root/\.ssh(/.*)?                                  all files          system_u:object_r:ssh_home_t:s0
+
+"todos los ficheros que creamos en  /root, tendran el contexto:  ssh_home_t: "
+
+
+
+PRACTICA:
+- Creamos un SERVIDOR WEB en un directorio en /mi_web
+
+1) Le añadimos el contexto de HTTP a nuestro directorio
+semanage  fcontext  -a  -t  httpd_sys_content_t      'mi_web(/.*)?'
+-a = add                            
+    -t = type
+?=puede haber 0 o 1 chars anterior
+
+2) Vemos que lo ha puesto
+semanage  fcontext  -lC        -- C = context Customizados
+
+3) Lo grabamos en la BBDD de SELinux  (RELABEL)
+restorecon   -FRvv  /mi_web    -F = Forced        -R = Recursive
+
+PRACTICA2:
+semanage port -l  | grep http        -- Port a los que SELinux permite acceder a APACHE
+http_cache_port_t              tcp      8080, 8118, 8123, 10001-10010
+http_cache_port_t              udp      3130
+http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000
+pegasus_http_port_t            tcp      5988
+pegasus_https_port_t           tcp      5989
+
+semanage  port  -a  -t  http_port_t   -p  tcp  666        --Dejo que apache pueda acceder al port 666 TCP
+        -a=add   -t=type  -p=protocol
+
+FTP  y  VSFTPD
+
+yum install vsftp ftp
+Desde  RHEL4 esta levantado el IPv6
+
+getsebool -a | grep ftp            -- BOOLEANOS que tienen que ver con ftp
+                    -a = all
+ftp_home_dir --> off            -- Selinux no permite que se acceda al HOME del user
+ftpd_anon_write --> off
+ftpd_connect_all_unreserved --> off
+ftpd_connect_db --> off
+ftpd_full_access --> off
+ftpd_use_cifs --> off
+ftpd_use_fusefs --> off
+ftpd_use_nfs --> off
+ftpd_use_passive_mode --> off
+httpd_can_connect_ftp --> off
+httpd_enable_ftp_server --> off
+sftpd_anon_write --> off
+sftpd_enable_homedirs --> off
+sftpd_full_access --> off
+sftpd_write_ssh_home --> off
+tftp_anon_write --> off
+tftp_home_dir --> off
+
+setsebool   -P   ftp_home_dir   on            -P=permanente
+
+semanage boolean  -lC                -- Veo los booleanos Customized
+SELinux boolean            State  Default Description
+ftp_home_dir                   (on   ,   on)  Allow ftp to home dir
+
+semanage -o        -o=output            -- Veo todo lo que está Customized al completo!
+boolean -D                        -- Esto se podria exportar a un fichero
+login -D
+interface -D
+user -D
+port -D
+node -D
+fcontext -D
+module -D
+boolean -m -1 ftp_home_dir
+
+semanage  -o  >  mis_reglas_selinux        -- Vuelco una politica a un fichero
+y despues en otra maquina:
+semanage  -i  <  mis_reglas_selinux
+
+grep setrouble   /var/log/messages
+Jul 10 18:33:38 localhost yum[975]: Installed: setroubleshoot-plugins-3.0.59-1.el7.noarch
+Jul 10 18:33:40 localhost yum[975]: Installed: setroubleshoot-server-3.2.17-2.el7.x86_64
+Jul 10 18:52:12 localhost yum[975]: Installed: setroubleshoot-3.2.17-2.el7.x86_64
+Feb 20 12:15:38 localhost setroubleshoot: Plugin Exception restorecon
+Feb 20 12:15:38 localhost setroubleshoot: SELinux is preventing /usr/sbin/vsftpd from read access on the file . For complete SELinux messages. run sealert -l d78d2ccf-6b9b-4b2f-b41c-c440fb093551
+Feb 20 12:17:41 localhost setroubleshoot: Plugin Exception restorecon
+Feb 20 12:17:41 localhost setroubleshoot: SELinux is preventing /usr/sbin/vsftpd from read access on the file . For complete SELinux messages. run sealert -l d78d2ccf-6b9b-4b2f-b41c-c440fb093551
+
+sealert -l d78d2ccf-6b9b-4b2f-b41c-c440fb093551
+Error
+query_alerts error (1003): id (d78d2ccf-6b9b-4b2f-b41c-c440fb093551) not found
+
+Paquete grafico para ver las POLITICAS DE SELINUX graficamemtte:
+ yum install policycoreutils-gui-2.2.5-11.el7.x86_64
+
+
+sestatus        -- Status de SELinux
+SELinux status:                 enabled
+SELinuxfs mount:                /sys/fs/selinux
+SELinux root directory:         /etc/selinux
+Loaded policy name:             targeted
+Current mode:                   enforcing
+Mode from config file:          enforcing
+Policy MLS status:              enabled
+Policy deny_unknown status:     allowed
+Max kernel policy version:      28
+
+
+
+
+MAS REPASO deSELINUX 
+
+ cd /etc/selinux/targeted/        ==> Ficheros de configuracion de selinux: ojo no tocar!!
+
+ls
+booleans.subs_dist  contexts  logins  modules  policy  setrans.conf  seusers
+
+cd contexts/files                ==> context de los files
+
+ll
+total 1668
+-rw-r--r--. 1 root root  352240 Feb 23 09:36 file_contexts
+-rw-------. 1 root root 1274911 Feb 23 09:36 file_contexts.bin
+-rw-r--r--. 1 root root   12619 Feb 23 09:36 file_contexts.homedirs
+-rw-------. 1 root root   42106 Feb 23 09:36 file_contexts.homedirs.bin
+-rw-r--r--. 1 root root     137 Feb 23 09:36 file_contexts.local
+-rw-------. 1 root root     255 Feb 23 09:36 file_contexts.local.bin
+-rw-r--r--. 1 root root       0 Apr  7  2014 file_contexts.subs
+-rw-r--r--. 1 root root     435 Apr  7  2014 file_contexts.subs_dist
+-rw-r--r--. 1 root root     139 Apr  7  2014 media
+
+less file_contexts
+/.*     system_u:object_r:default_t:s0
+/[^/]+  --      system_u:object_r:etc_runtime_t:s0
+/a?quota\.(user|group)  --      system_u:object_r:quota_db_t:s0
+/nsr(/.*)?      system_u:object_r:var_t:s0
+/sys(/.*)?      system_u:object_r:sysfs_t:s0
+/xen(/.*)?      system_u:object_r:xen_image_t:s0
+/mnt(/[^/]*)    -l      system_u:object_r:mnt_t:s0
+/mnt(/[^/]*)?   -d      system_u:object_r:mnt_t:s0
+/bin/.* system_u:object_r:bin_t:s0
+/dev/.* system_u:object_r:device_t:s0
+/usr/.* system_u:object_r:usr_t:s0
+/var/.* system_u:object_r:var_t:s0
+/run/.* system_u:object_r:var_run_t:s0
+/srv/.* system_u:object_r:var_t:s0
+/tmp/.* <<none>>
+/opt/.* system_u:object_r:usr_t:s0
+/etc/.* system_u:object_r:etc_t:s0
+/lib/.* system_u:object_r:lib_t:s0
+/root(/.*)?     system_u:object_r:admin_home_t:s0
+/usr/.*\.cgi    --      system_u:object_r:httpd_sys_script_exec_t:s0
+/opt/.*\.cgi    --      system_u:object_r:httpd_sys_script_exec_t:s0
+/run/.*\.*pid   <<none>>
+/dev/[0-9].*    -c      system_u:object_r:usb_device_t:s0
+/mnt/[^/]*/.*   <<none>>
+/dev/.*mouse.*  -c      system_u:object_r:m
+
+cat file_contexts.local            -- En este fichero toca "semanage"
+# This file is auto-generated by libsemanage
+# Do not edit directly.
+/var/web-content(/.*)?    system_u:object_r:httpd_sys_content_t:s0        -- el semanage del lab (ejemplo)
+
+
+
+¿COMO PUEDO VER EL CONTEXTO DE UN SERVICIO?
+man -k '_selinux'            -- Proporciona man pages de selinux    (mandb si es necesario)
+yum install selinux-policy-devel    -- Instalo Paquete de politicas
+man httpd_selinux            -- Ya vemos todas las politicas de selinux para el servicio httpd
+
+
+Chapter 8.   Connecting to Network-defined Users and Groups (LDAP)
+
+Un sistema de gestion de identidades centralizada necesitará proveer al menos 2 servicios:
+
+1. Account Information;
+    "Cosas del usuario":    username, home directory, UID, grupo, shell
+    Soluciones populares: LDAP (dentro de IPA y NIS)
+
+2. Autentication Information:
+    "como se gestiona la autenticidad del usuario"
+    User/Passwd, smartcard, datos biometricos etc
+
+Usaremos KERBEROS, que solo provee SSO    Signel sign ON , mediante tokens
+
+IPA Server == LPAD + Kerberos
+
+
+SERVICIO DE AUNTENTICACION LOCAL
+Solo en el propio sistema.  4 ficheros:
+
+/etc/passwd
+student:x:1000:1000:Student User:/home/student:/bin/bash
+
+/etc/shadow
+student:$6$8oIjLCsc$/n1iQXYh1E6.uOEuJKgioqAtmqm2TQmkJGF2RwyteIr1tIfrPdiRYgWe6Sjen5/eMij2uHM/a1tue/QRlo3X80:16261:0:99999:7:::
+    6 = SHA512
+    Huella
+    Saltbit     = basado en timestamp, disco, ...
+
+ ll /etc/shadow
+----------. 1 root root 1170 Feb 23 09:19 /etc/shadow
+
+/etc/group
+grep student /etc/group
+wheel:x:10:student
+student:x:1000:
+
+/etc/gshadow        Passwd de los grupos (en desuso)
+    student:!:    la admiracion (!) es que no tiene passwd
+
+CENTRALIZED Gestion
+
+/etc/ldap.conf        Info de LDAP server y settings
+
+/etc/krb5.conf        Info de Kerberos infraestructura
+
+/etc/sssd/sssd.conf    Para configurar el System Security Services Daemon
+Recupera y cachea info de cuentas y la autenticacion
+
+/etc/nsswitch.conf    Altera el orden de como funciona la autenticacion
+
+/etc/pam/*        Modulos de autenticacion plugables
+            Si los modulos usan Certificados para las conexiones
+            Como la Autenticacion deber ser mantenida por varios servicios
+
+/etc/openldap/cacerts    Almacena los root certificate authority (CA) que pueden validar los certificados SSL usados para identificar
+            LDAP servers
+
+Todos estos ficheros los manejaremos con una utilidad en RH7: (texto o grafica)
+authconfig
+authconfig.tui
+authconfig-gtk
+
+Instalando el SSSD daemon tocaremos estos ficheros que hemos visto antes a la vez
+SSSD= Es un servicio que se instala en los clientes, que permite a los clientes conectarse durante un tiempo (default=5mins)
+    Se encarga de cachear la informacion
+LDAP parametros necesarios
+
+1. hostname del  servidor LDAP  (1  o varios)
+2. base DN
+    de la parte del arbol LDAP donde el sistema debe buscar users
+    Tipìcamente dc=example , dc=com, o ou=People , o=Ponycorp.
+    Esta info la proporcionara el Admin del server LDAP
+
+3. Si SSL/TLS es usado para encryptar comunicaciones con el LDAP: necesitaremos un root CA certificate que 
+    pueda ser ofrecido por el LDAP server
+
+Importante: el sistema tambien necesitara extra packages instalados para dar la funcionalidad de LDAP client
+Instalando sssd proveerá todas las dependencias necesarias
+
+KERBEROS
+
+Es un server que nos ofrece info. solo de autenticacion
+Authconfig necesitará 3 cosas::
+
+1. Kerberos REALM (reino)
+    Es un dominio de maquinas que usan un set de kerveros users y atentitcation servers
+Suele ir asociado a un servicio
+    Para que todos los servicios puedan ser validados por un ticket
+
+2. KDC    Key Distribution Center.     1 o mas
+    Es el alma de KERBEROS
+    Aqui nos autenticamos gracias al AS (Autentication Server)
+
+3. Admin servers
+    El hostname
+    Es la maquina con la que hablarán los clientes cuando deseen modificar su passwd o otras modificaciones
+    Es tipicamente el mismo que el primary KDC pero puede ser otro
+
+Ademas se puede especificar si un DNS deber ser usado para buscar el REALM a usar para un hostname especifico y 
+automaticamente el KDCs y Admins servers.
+
+Un extra-package puede usarse: krb5-workstation
+
+
+Comando getent
+
+getent   
+getent   passwd   <USERNAME>
+Def : Obtiene info. de las entidades partiendo del  fichero /etc/nsswitch.conf
+
+# Example:
+#passwd:    db files nisplus nis
+#shadow:    db files nisplus nis
+#group:     db files nisplus nis
+
+passwd:     files sss                -- Si borramos "files" --> NO LEERA DE /etc/hosts !!
+shadow:     files sss
+group:      files sss
+#initgroups: files
+
+#hosts:     db files nisplus nis dns
+hosts:      files dns
+
+# Example - obey only what nisplus tells us...
+#services:   nisplus [NOTFOUND=return] files
+#networks:   nisplus [NOTFOUND=return] files
+#protocols:  nisplus [NOTFOUND=return] files
+#rpc:        nisplus [NOTFOUND=return] files
+#ethers:     nisplus [NOTFOUND=return] files
+#netmasks:   nisplus [NOTFOUND=return] files     
+
+bootparams: nisplus [NOTFOUND=return] files
+
+ethers:     files
+netmasks:   files
+networks:   files
+protocols:  files
+rpc:        files
+services:   files sss
+
+netgroup:   files sss
+
+publickey:  nisplus
+
+automount:  files
+aliases:    files nisplus
+
+
+
+
+IPA    (Identity, Policy and Auditing)
+
+Provee una gestion centralizada de LDAP + KERBERPS
+Cuando hay un server IPA, todo se gestiona centralizadamente desde aqui
+
+ipa-client-install
+    Hace un consulta , se conecta al DNS y se descarga la info
+
+CONFIG DE IPA por LINEA DE COMANDOS (LDAP+KERBEROS)
+ sudo authconfig --enableldap  --ldapserver=classroom-example.com --ldapbasedn="dc=example,dc=com" --enableldaptls --ldaploadcacert="http://classroom.example.com/pub/example-ca.crt"  --disableldapauth --krb5adminserver=classroom.example.com  --krb5kdc=classroom.example.com --krb5realm=EXAMPLE.COM --update
+
+vim   /etc/sssd/sssd.conf
+[domain/server4.example.com]
+cache_credentials = True
+krb5_store_password_if_offline = True
+ipa_domain = server4.example.com
+id_provider = ipa
+auth_provider = ipa
+access_provider = ipa
+ipa_hostname = server4.example.com
+chpass_provider = ipa
+ipa_server = server4.example.com
+ipa_server_mode = True
+ldap_tls_cacert = /etc/ipa/ca.crt
+[sssd]
+services = nss, pam, ssh
+config_file_version = 2
+domains = server4.example.com
+[nss]
+
+[pam]
+
+[sudo]
+
+[autofs]
+
+[ssh]
+
+[pac]
+
+enumerate = True        ==> Nos mostrará user locales y remotos, (segun lo que tengamos en /etc/nsswitch.conf)
+enum_cache_timeout        ==> Tiempo de espera hasta que vuelve a pedir las credenciales
+
+
+
+Chapter 9.  Disk, Partitions and File Systems to a Linux System
+24-2-15
+- Un device tipo BLOQUE contiene particiones
+- Los ficheros están en devices tipo BLOQUE
+- Los Device tipo bloque pueden estar en: Disco fisico, disco de red, disco virtual
+
+MBR
+IBM creó en 1982 el scheme MBR
+El MBR ocupa 512 bytes.
+
+Sectores del MBR:
+
+1) Bootloader        Ocupa 446 bytes (aqui está el GRUB o GRUB2)
+
+2)  4 casillas de 16 bytes     cada una    
+1 por cada particion  (FSID -  Sector Inicio - Sector Fin - Tamaño)
+    Cada casiilla tiene:
+            Flag bootable = 1byte
+            CHS comienzo = 3 bytes
+            CHS final = 3 bytes
+            Tipo de Particion = 1 byte
+LBA = 4 bytes
+Tamaño = 4 bytes        Esto limita cada particion a 2 TeraBits
+
+3) Sign MBR        Cada vez que se modifica una particion--> se genera un hash-code y se graba aqui.
+
+
+Sectores del MBR:
+Bootloader
+(446 bytes)
+
+
+CASILLA1
+(16 bytes)
+CASILLA2
+(16 bytes)
+CASILLA3
+(16 bytes)
+CASILLA4
+(16 bytes)
+Sign MBR 
+(2 bytes)
+
+MANAGING MBR Partitions
+
+/dev/vd*     - Discos virtuales manejados por Virt-IO
+/dev/xvd    - Discos XEN
+
+
+RHEL 6        Las unidades estaban en cilindros    recordar que se ponia fdisk  -cu
+RHEL 7        Las unidades estan en sectores
+
+fdisk /dev/vdb
+Welcome to fdisk (util-linux 2.23.2).
+
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+
+Device does not contain a recognized partition table
+Building a new DOS disklabel with disk identifier 0x7b18042c.
+
+Command (m for help): help
+h: unknown command
+Command action
+   a   toggle a bootable flag
+   b   edit bsd disklabel
+   c   toggle the dos compatibility flag        -- Compatiblidad con DOS
+   d   delete a partition
+   g   create a new empty GPT partition table
+   G   create an IRIX (SGI) partition table
+   l   list known partition types
+   m   print this menu
+   n   add a new partition
+   o   create a new empty DOS partition table
+   p   print the partition table
+   q   quit without saving changes
+   s   create a new empty Sun disklabel
+   t   change a partition's system id
+   u   change display/entry units
+   v   verify the partition table
+   w   write table to disk and exit
+   x   extra functionality (experts only)
+
+Command (m for help): p        -- print
+
+Disk /dev/vdb: 10.7 GB, 10737418240 bytes, 20971520 sectors        --Vemos el tamaño del DISCO
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk label type: dos
+Disk identifier: 0x7b18042c
+
+   Device Boot      Start         End      Blocks   Id  System
+                    -- No hay ninguna particion
+
+fdisk = Ofrece compatibilidad con GPT pero no está soportado
+
+Command (m for help): n
+Partition type:
+   p   primary (0 primary, 0 extended, 4 free)
+   e   extended
+Select (default p): p    primary
+Partition number (1-4, default 1): 1
+First sector (2048-20971519, default 2048):
+Using default value 2048
+Last sector, +sectors or +size{K,M,G} (2048-20971519, default 20971519): +512M
+Partition 1 of type Linux and of size 512 MiB is set
+
+Command (m for help): p    print
+
+Disk /dev/vdb: 10.7 GB, 10737418240 bytes, 20971520 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk label type: dos
+Disk identifier: 0x7b18042c
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/vdb1            2048     1050623      524288   83  Linux        --Particion primaria creada
+
+Particiones Logicas = Van del 5 al 15
+
+83      Linux   = ext4, xfs
+82     swap
+8e    LVM
+c     Win95 FAT
+b    Win95 FAT32  (LBA)
+7    NTFS / HPFS(mac)
+
+OJO: Si el recurso está ocupado no se re-lee la tabla de particiones:
+
+partprobe  /dev/vdb        -- Relee la tabla de particiones
+cat  /proc/partitions        -- Prueba que el  KERNEL ha releido las particiones
+
+
+MANAGING GPT  Partitions
+Para sistemas que tengan firmware UEFI
+Permite hasta un maximo de 128 particiones
+{+-}size{KMGTP}        hasta Petibits
+    Si le pongo "-"    significa que empieza a reservar desde atras
+
+¿Que es protective?
+Pues que se puede pasar de GPT a MBR o vicerversa, pero esto no es 100% fiable
+Ojo: solo es posible mientras haya como maximo 4 particiones (para pasar a MBR)
+
+FILE SYSTEMS
+
+File System
+Def: es un conjunto de datos para comunicarse con el SO
+    Ej FAT = es casi legible en cualquier SO
+
+CREAR FILE SYSTEMS
+
+mkfs  -t  xfs  /dev/vdb2
+
+Desde RHEL7 se usa XFS
+
+ext2     = FAT (muy similiar)
+ext3     = Idem funcionalidad con Journally
+ext4     = Idem con extents
+    Se reserva 4 bloques contiguos por si el fichero crece
+xfs    = Mejora el Journally
+    = Tamaño maximo de fichero de 8 Hexabytes
+    = Tamaño maximo del FS=
+    = desventaja: No se puede reducir un FS !!!
+
+xfsdoom = Herramienta para volcar metadatos (se puede hacer en caliente
+
+MOUNT
+Montaje manual:
+- Solo lo hace root
+- Cuando se reinicia la maquina desaparecen
+mount  /dev/vdb2  /mnt
+echo $?
+0
+
+Montaje automatico:
+Fichero /etc/fstab
+# /etc/fstab
+# Created by anaconda on Wed May  7 01:22:57 2014
+#
+# Accessible filesystems, by reference, are maintained under '/dev/disk'
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
+#
+UUID=9bf6b9f7-92ad-441b-848e-0257cbb883d1 /                       xfs     defaults            1         1
+                                    opciones montaje    Volcado        Orden para
+                                                metadatos    orden fsck
+vim etc/fstab
+:r         -- Permite hacer un read de un file
+:r!        ! = todo lo que escriba será interpretado por la shell
+:r! blkid      /dev/vdb1    == Nos devuelve el blkid 
+
+UMOUNT
+2 formas:
+- Desmontando el device
+- Desmontando el directorio (punto de montaje)
+
+
+MBR        
+(backup / restore)
+
+Backup del MBR al completo -->a 1 fichero
+dd = Lee devices en bloques de datos
+dd   if=/dev/vda   of=/tmp/vda.mbr    bs=512  count=1        -- Solo el 1er. bloque = MBR
+
+Restore del MBR al completo <-- desde 1 fichero
+dd   of=/dev/vda   if=/tmp/vda.mbr    bs=512  count=1        -- Recupero 1 MBR de un disco
+
+
+TABLA DE PARTICIONES      (backup / restore)
+sfdisk - partition table manipulator for Linux
+
+Volcado de la tabla de particiones
+sfdisk  -d  /dev/vdb            -d = dump
+# partition table of /dev/vdb
+unit: sectors
+
+/dev/vdb1 : start=     2048, size=  2097152, Id=83
+/dev/vdb2 : start=        0, size=        0, Id= 0
+/dev/vdb3 : start=        0, size=        0, Id= 0
+/dev/vdb4 : start=        0, size=        0, Id= 0
+
+sfdisk  -d  /dev/vdb >  /tmp/vdb.part            -- Copiamos a un fichero plano
+
+Restauracion de la tabla de particiones
+sfdisk  --force   /dev/vdb  <   /tmp/vdb.part
+
+
+GPT 
+
+Backup
+dd   if=/dev/vda   of=/tmp/vda.gpt    bs=512  count=63        -- Solo el 1er. bloque = GPT
+
+Restore
+dd   of=/dev/vda   if=/tmp/vda.gpt    bs=512  count=63        -- Solo el 1er. bloque = GPT
+
+
+TABLAS DE PARTICIONES DE GPT
+
+sgdisk = Guarda en datos binarios
+
+Backup
+sgdisk   -b  /dev/vdb    /tmp/vdb.particiones        -b = backup
+
+Restore
+sgdisk   -l  /dev/vdb    /tmp/vdb.particiones        -l = loadbackup
+
+partprobe  /dev/vdb
+cat  /proc/partitions
+
+
+SWAP  SPACE
+
+Por defecto: Se empieza hacer swapping cuando la RAM está exausta al 60%
+
+Sistemas de gestionar la SWAP:
+Tipo bloque
+Tipo fichero
+
+CREAR la SWAP:
+1º) Damos el tamaño
+    fdisk    /dev/vdb1
+        n    p    ENTER        +512    p    w
+
+2º) Asignamos el type=swap
+    t    82
+
+3º) mkswap    /dev/vdb1    INICIALIZA LA SWAP
+
+    consejo:  rellenar la swap con datos aleatorios
+    /dev/urandom    ==> Device con datos aleatorios
+    dd   if=/dev/urandom    of=/tmp/mySwap  bs=1M     count=1000    --Crear 1 fichero para SWAP
+    mkswap    /tmp/mySwap
+
+ACTIVAR LA SWAP
+Hay 2 maneras de activar la swap:
+
+1. temporal
+swapon    /dev/vdb1
+
+2. Persistente:
+vim  /etc/vfstab                -- Añadimos la linea de swap
+    - La swap no tiene punto de montaje (se pone swap)
+    - Se pone defaults
+    - Ultimas columnas a 0 0 ( ni se chequea ni tiene table de i-nodes)
+
+swapon  -a    ACTIVAR LA SWAP
+swapon  -s    SUMMARIZE
+
+DES-ACTIVAR LA SWAP (siempre y cuando no esté en uso)
+swapoff   -a
+
+
+MIRAR EL ESTADO DE SWAP
+swapon   -s        Statistics
+
+SET SWAP
+swapon  pri=mount opcion
+
+¿Cuanta SWAP pongo?
+SWAP = Minimo el tamaño de la RAM
+Hasta 2 GB de RAM     == el doble
+Hasta 4 GB de RAM     == 1,5 veces
+
+cat   /proc/cmdline
+BOOT_IMAGE=/boot/vmlinuz-3.10.0-123.el7.x86_64 root=UUID=9bf6b9f7-92ad-441b-848e-0257cbb883d1 ro vconsole.keymap=es console=tty0 crashkernel=auto vconsole.font=latarcyrheb-sun16
+    
+
+systemctl isolate graphical.target
+
+blkid -U 9bf6b9f7-92ad-441b-848e-0257cbb883d1        --Nos devuelve el device asociado al tocho UUID
+/dev/vda1
+
+
+
+
+lsblk        -- lists information about all available or the specified block devices.  
+The lsblk command reads the sysfs  filesystem to gather information.
+
+NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+vda    253:0    0   10G  0 disk
+└─vda1 253:1    0   10G  0 part /
+vdb    253:16   0   10G  0 disk
+├─vdb1 253:17   0    2G  0 part /backup
+├─vdb2 253:18   0  512M  0 part [SWAP]
+└─vdb3 253:19   0  512M  0 part [SWAP]
+
+ESTAS 2 UNIDADES LAS CREA SYSTEMCTL de manera dinamica:
+
+systemctl status backup.mount
+backup.mount - /backup
+   Loaded: loaded (/etc/fstab)
+   Active: active (mounted) since Tue 2015-02-24 13:42:33 CET; 7min ago
+    Where: /backup
+     What: /dev/vdb1
+  Process: 446 ExecMount=/bin/mount /dev/disk/by-uuid/775f0148-7330-4a45-b090-482fff7a3031 /backup -t xfs (code=exited, status=0/SUCCESS)
+
+Feb 24 13:42:33 localhost systemd[1]: Mounted /backup.
+systemctl status backup-mySwap.swap
+backup-mySwap.swap - /backup/mySwap
+   Loaded: loaded (/etc/fstab)
+   Active: active since Tue 2015-02-24 13:42:34 CET; 8min ago
+     What: /backup/mySwap
+  Process: 453 ExecActivate=/sbin/swapon -p 1 /backup/mySwap (code=exited, status=0/SUCCESS)
+
+Feb 24 13:42:33 localhost systemd[1]: Activating swap /backup/mySwap...
+Feb 24 13:42:34 localhost systemd[1]: Activated swap /backup/mySwap.
+
+
+
+Chapter 10. LVM. Logical Volume Manager
+25-2-15
+-Nos ofrecen flexibilidad para gestionar recursos de bloques de datos
+Extent = Es un conjunto de bloques de datos para R/W
+
+PROCEDIMIENTO PARA CREAR UN LV
+
+fdisk    /dev/vdb
+    n    p    +512M        w    t    0x8e
+    Le ponemos a cada particion el type = 0x8e
+
+pvcreate  /dev/vdb1
+Mete los metadatos que inicializan la particion/disco para que puedan ser usadas por LVM
+    (Con LVM2 no haria falta c)
+
+vgcreate    vg-name   /dev/vdb{1,2}
+    Por defecto asgina un tamaño de 4 MiB    "Mebibytes"
+    
+lvcreate    -n    lv-name  -L  2M   vg-name
+        -n = name
+        -L = tamaño en bytes
+        -l = tamaño en extensiones
+
+    Min extents = 1 extent
+Max extents  = Las extents totales que tiene el VG
+
+
+Los LVM se mapean mediante el modulo "dm"
+ls  /dev/dm-*
+
+ls  /dev/mapper
+    vg--alpha-hercules            Cuando veamos dos guiones --  ==> es que es un VG
+                        vg--alpha        Es el VG
+                        hercules        Es el LV
+
+mkfs.xfs  /dev/mapper/vg--alpha-hercules
+
+
+PROCEDIMIENTO a LA INVERSA: DESTRUIR UN LV
+
+1) Desmontar
+umount
+2) Quitar del /etc/fstab
+vim
+3) Destruir en LVM
+lvremove   /dev/mapper/vg-alpha/hercules
+    Do you really want to remoe active logial volume hercules?  [ y / n ]
+    
+vgremove  vg-alpha
+
+pvremove  /dev/vdb{1,2}
+
+PRACTICA
+
+[root@server4 ~]# pvcreate /dev/vdb{1,2,3}
+  Physical volume "/dev/vdb1" successfully created
+  Physical volume "/dev/vdb2" successfully created
+  Physical volume "/dev/vdb3" successfully created
+
+[root@server4 ~]# pvdisplay
+  "/dev/vdb3" is a new physical volume of "3.00 GiB"
+  --- NEW Physical volume ---
+  PV Name               /dev/vdb3
+  VG Name               
+  PV Size               3.00 GiB
+  Allocatable           NO
+  PE Size               0   
+  Total PE              0
+  Free PE               0
+  Allocated PE          0
+  PV UUID               mNdjd0-xmie-TGyw-pQCX-JMjq-eEOr-aNf1G1
+   
+  "/dev/vdb1" is a new physical volume of "3.00 GiB"
+  --- NEW Physical volume ---
+  PV Name               /dev/vdb1
+  VG Name               
+  PV Size               3.00 GiB
+  Allocatable           NO
+  PE Size               0   
+  Total PE              0
+  Free PE               0
+  Allocated PE          0
+  PV UUID               Fo2FhX-cPJn-B0vg-eH9L-e5SC-qO99-Xca31x
+   
+  "/dev/vdb2" is a new physical volume of "3.00 GiB"
+  --- NEW Physical volume ---
+  PV Name               /dev/vdb2
+  VG Name               
+  PV Size               3.00 GiB
+  Allocatable           NO
+  PE Size               0   
+  Total PE              0
+  Free PE               0
+  Allocated PE          0
+  PV UUID               m5uMeP-ViDD-cWV6-Pklv-zPV1-N30a-6YwCve
+[root@server4 ~]# pvscan
+  PV /dev/vdb3                      lvm2 [3.00 GiB]
+  PV /dev/vdb1                      lvm2 [3.00 GiB]
+  PV /dev/vdb2                      lvm2 [3.00 GiB]
+  Total: 3 [9.00 GiB] / in use: 0 [0   ] / in no VG: 3 [9.00 GiB]
+
+
+[root@server4 ~]#   pvs            -mas resumido
+  PV         VG   Fmt  Attr PSize PFree
+  /dev/vdb1       lvm2 a--  3.00g 3.00g
+  /dev/vdb2       lvm2 a--  3.00g 3.00g
+  /dev/vdb3       lvm2 a--  3.00g 3.00g
+
+
+
+[root@server4 ~]# vgcreate   --help
+  vgcreate: Create a volume group
+vgcreate
+    [-A|--autobackup {y|n}]
+    [--addtag Tag]
+    [--alloc AllocationPolicy]
+    [-c|--clustered {y|n}]                    -- Si queremos que haga mirror o no entre los PV's
+    [-d|--debug]
+    [-h|--help]
+    [-l|--maxlogicalvolumes MaxLogicalVolumes]
+    [-M|--metadatatype 1|2]
+    [--[vg]metadatacopies #copies]
+    [-p|--maxphysicalvolumes MaxPhysicalVolumes]
+    [-s|--physicalextentsize PhysicalExtentSize[bBsSkKmMgGtTpPeE]]        -- determina el tamaño de los extents
+    [-t|--test]
+    [-v|--verbose]
+    [--version]
+    [-y|--yes]
+    [ PHYSICAL DEVICE OPTIONS ]
+    VolumeGroupName PhysicalDevicePath [PhysicalDevicePath...]
+
+PV EXTENTS
+
+TAMAÑOS =     entre 8 Kib  y 16GiB            i = tamaño en multiplos de 1000 ( no 1024)
+
+ vgcreate  -s  64M  getafe  /dev/vdb{1,2}        -- Creamos un VG.     -s= size PE = 64M
+  Volume group "getafe" successfully created
+
+[root@server4 ~]# pvdisplay /dev/vdb1
+  --- Physical volume ---
+  PV Name               /dev/vdb1
+  VG Name               getafe
+  PV Size               3.00 GiB / not usable 64.00 MiB        -- se reserva 1 PE para migraciones
+  Allocatable           yes
+  PE Size               64.00 MiB
+  Total PE              47
+  Free PE               47
+  Allocated PE          0
+  PV UUID               Fo2FhX-cPJn-B0vg-eH9L-e5SC-qO99-Xca31x
+
+[root@server4 ~]# lvcreate --help
+  lvcreate: Create a logical volume
+
+lvcreate
+    [-A|--autobackup {y|n}]
+    [-a|--activate [a|e|l]{y|n}]
+    [--addtag Tag]
+    [--alloc AllocationPolicy]
+    [--cachemode CacheMode]
+    [-C|--contiguous {y|n}]
+    [-d|--debug]
+    [-h|-?|--help]
+    [--ignoremonitoring]
+    [--monitor {y|n}]
+    [-i|--stripes Stripes [-I|--stripesize StripeSize]]
+    [-k|--setactivationskip {y|n}]
+    [-K|--ignoreactivationskip]
+    {-l|--extents LogicalExtentsNumber[%{VG|PVS|FREE}] |        - extents (en nº o % de VG, PVs o lo q queda free)
+     -L|--size LogicalVolumeSize[bBsSkKmMgGtTpPeE]}        - En MB 
+    [-M|--persistent {y|n}] [--major major] [--minor minor]
+    [-m|--mirrors Mirrors [--nosync] [{--mirrorlog {disk|core|mirrored}|--corelog}]]    - De un PV a PV o de un VG a VG
+    [-n|--name LogicalVolumeName]
+    [--noudevsync]
+    [-p|--permission {r|rw}]
+    [--[raid]minrecoveryrate Rate]
+    [--[raid]maxrecoveryrate Rate]
+    [-r|--readahead ReadAheadSectors|auto|none]
+    [-R|--regionsize MirrorLogRegionSize]
+    [-T|--thin  [-c|--chunksize  ChunkSize]
+      [--discards {ignore|nopassdown|passdown}]
+      [--poolmetadatasize MetadataSize[bBsSkKmMgG]]]
+      [--poolmetadataspare {y|n}]
+    [--thinpool ThinPoolLogicalVolume{Name|Path}]
+    [-t|--test]
+    [--type VolumeType]
+    [-v|--verbose]
+    [-W|--wipesignatures {y|n}]
+    [-Z|--zero {y|n}]
+    [--version]
+    VolumeGroupName [PhysicalVolumePath...]
+
+lvcreate
+    { {-s|--snapshot} OriginalLogicalVolume[Path] |
+      [-s|--snapshot] VolumeGroupName[Path] -V|--virtualsize VirtualSize}
+      {-T|--thin} VolumeGroupName[Path][/PoolLogicalVolume]
+                  -V|--virtualsize VirtualSize}
+    [-c|--chunksize]
+    [-A|--autobackup {y|n}]
+    [--addtag Tag]
+    [--alloc AllocationPolicy]
+    [-C|--contiguous {y|n}]
+    [-d|--debug]
+    [--discards {ignore|nopassdown|passdown}]
+    [-h|-?|--help]
+    [--ignoremonitoring]
+    [--monitor {y|n}]
+    [-i|--stripes Stripes [-I|--stripesize StripeSize]]
+    [-k|--setactivationskip {y|n}]
+    [-K|--ignoreactivationskip]
+    {-l|--extents LogicalExtentsNumber[%{VG|FREE|ORIGIN}] |
+     -L|--size LogicalVolumeSize[bBsSkKmMgGtTpPeE]}
+    [--poolmetadatasize MetadataVolumeSize[bBsSkKmMgG]]
+    [-M|--persistent {y|n}] [--major major] [--minor minor]
+    [-n|--name LogicalVolumeName]
+    [--noudevsync]
+    [-p|--permission {r|rw}]
+    [-r|--readahead ReadAheadSectors|auto|none]
+    [-t|--test]
+    [--thinpool ThinPoolLogicalVolume[Path]]
+    [-v|--verbose]
+    [--version]
+    [PhysicalVolumePath...]
+
+[root@server4 ~]#  lvcreate  -n mitad -l 50%VG getafe        -- "cojete el 50% de la extents del VG getafe"
+WARNING: ext4 signature detected on /dev/getafe/mitad at offset 1080. Wipe it? [y/n] y
+  Wiping ext4 signature on /dev/getafe/mitad.
+  Logical volume "mitad" created
+
+[root@server4 ~]# vgdisplay   getafe
+  --- Volume group ---
+  VG Name               getafe
+  System ID             
+  Format                lvm2
+  Metadata Areas        2
+  Metadata Sequence No  2
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                1
+  Open LV               0
+  Max PV                0
+  Cur PV                2
+  Act PV                2
+  VG Size               5.88 GiB
+  PE Size               64.00 MiB
+  Total PE              94
+  Alloc PE / Size       47 / 2.94 GiB
+  Free  PE / Size       47 / 2.94 GiB
+  VG UUID               QuHeOj-Zadm-2LLn-Ow2o-CSmf-dr4Z-0k3WGz
+
+[root@server4 ~]# lvdisplay    /dev/getafe/mitad
+  --- Logical volume ---
+  LV Path                /dev/getafe/mitad
+  LV Name                mitad
+  VG Name                getafe
+  LV UUID                wjVy1B-6MSd-cTAp-25Lt-FeZO-Eohb-KmEWmq
+  LV Write Access        read/write
+  LV Creation host, time server4.example.com, 2015-02-25 10:35:25 +0100
+  LV Status              available
+  # open                 0
+  LV Size                2.94 GiB
+  Current LE             47    ==> la mitad !!!!
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     8192
+  Block device           252:0
+
+[root@server4 ~]# lvcreate -n datos -L 512M getafe
+  Logical volume "datos" created
+[root@server4 ~]# mkdir /datos
+[root@server4 ~]# mkfs.ext4 datos
+mke2fs 1.42.9 (28-Dec-2013)
+Could not stat datos --- No such file or directory
+
+The device apparently does not exist; did you specify it correctly?
+[root@server4 ~]# mkfs.ext4 /dev/getafe/datos
+mke2fs 1.42.9 (28-Dec-2013)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+Stride=0 blocks, Stripe width=0 blocks
+32768 inodes, 131072 blocks
+6553 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=134217728
+4 block groups
+32768 blocks per group, 32768 fragments per group
+8192 inodes per group
+Superblock backups stored on blocks:
+    32768, 98304
+
+Allocating group tables: done                            
+Writing inode tables: done                            
+Creating journal (4096 blocks): done
+Writing superblocks and filesystem accounting information: done
+
+[root@server4 ~]# mount /dev/getafe/datos /datos
+[root@server4 ~]# df -h
+Filesystem                Size  Used Avail Use% Mounted on
+/dev/vda1                  10G  3.0G  7.1G  30% /
+devtmpfs                  906M     0  906M   0% /dev
+tmpfs                     921M   80K  921M   1% /dev/shm
+tmpfs                     921M   17M  904M   2% /run
+tmpfs                     921M     0  921M   0% /sys/fs/cgroup
+/dev/mapper/getafe-datos  488M  780K  452M   1% /datos
+
+[root@server4 ~]# lsblk -f    -f, --fs              Output  info  about  filesystems
+NAME             FSTYPE      LABEL UUID                                   MOUNTPOINT
+vda                                                                       
+└─vda1           xfs               9bf6b9f7-92ad-441b-848e-0257cbb883d1   /
+vdb                                                                       
+├─vdb1           LVM2_member       Fo2FhX-cPJn-B0vg-eH9L-e5SC-qO99-Xca31x
+│ └─getafe-datos ext4              1e54b58b-6f59-4f71-bffd-4bf9850c1fc4   /datos
+├─vdb2           LVM2_member       m5uMeP-ViDD-cWV6-Pklv-zPV1-N30a-6YwCve
+└─vdb3           LVM2_member       mNdjd0-xmie-TGyw-pQCX-JMjq-eEOr-aNf1G1
+
+
+VAMOS A HACER un STRIPE
+
+[root@server4 ~]#  lvcreate -n stripe  -I 4  -i 2  -L 512M getafe
+        -n = name
+        -I  4  = stripesize (Grabará en trozos de extents)
+        -i 2  = Nº de stripes  (dispositivos o PV)
+
+
+[root@server4 ~]# pvdisplay
+  --- Physical volume ---
+  PV Name               /dev/vdb1
+  VG Name               getafe
+  PV Size               3.00 GiB / not usable 64.00 MiB
+  Allocatable           yes
+  PE Size               64.00 MiB
+  Total PE              47
+  Free PE               35
+  Allocated PE          12        (Hay 8 mas porque son del LV datos)
+  PV UUID               Fo2FhX-cPJn-B0vg-eH9L-e5SC-qO99-Xca31x
+   
+  --- Physical volume ---
+  PV Name               /dev/vdb2
+  VG Name               getafe
+  PV Size               3.00 GiB / not usable 64.00 MiB
+  Allocatable           yes
+  PE Size               64.00 MiB
+  Total PE              47
+  Free PE               43
+  Allocated PE          4
+  PV UUID               m5uMeP-ViDD-cWV6-Pklv-zPV1-N30a-6YwCve
+   
+  "/dev/vdb3" is a new physical volume of "3.00 GiB"
+  --- NEW Physical volume ---
+  PV Name               /dev/vdb3
+  VG Name               
+  PV Size               3.00 GiB
+  Allocatable           NO
+  PE Size               0   
+  Total PE              0
+  Free PE               0
+  Allocated PE          0
+  PV UUID               mNdjd0-xmie-TGyw-pQCX-JMjq-eEOr-aNf1G1
+
+[root@server4 ~]# vgs
+  VG     #PV #LV #SN Attr   VSize VFree
+  getafe   2   2   0 wz--n- 5.88g 4.88g
+
+[root@server4 ~]# lvs
+  LV     VG     Attr       LSize   Pool Origin Data%  Move Log Cpy%Sync Convert
+  datos  getafe -wi-ao---- 512.00m                                             
+  stripe getafe -wi-a----- 512.00m
+
+VAMOS A EXTENDER UN LV
+
+[root@server4 ~]# lvextend  -l +8 /dev/getafe/datos            --Añade 8 extents al LV
+  Extending logical volume datos to 1.00 GiB
+  Logical volume datos successfully resized
+
+VAMOS A EXTENDER UN VG
+[root@server4 ~]# vgextend getafe  /dev/vdb3
+  Volume group "getafe" successfully extended
+
+-- Pero aun no hemos extendido el File System ....
+
+[root@server4 /]# mkfs.ext4  /dev/getafe/datos
+mke2fs 1.42.9 (28-Dec-2013)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+Stride=0 blocks, Stripe width=0 blocks
+65536 inodes, 262144 blocks
+13107 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=268435456
+8 block groups
+32768 blocks per group, 32768 fragments per group
+8192 inodes per group
+Superblock backups stored on blocks:
+    32768, 98304, 163840, 229376
+
+Allocating group tables: done                            
+Writing inode tables: done                            
+Creating journal (8192 blocks): done
+Writing superblocks and filesystem accounting information: done
+
+1)
+[root@server4 /]# lvextend -L +512M /dev/getafe/datos
+  Extending logical volume datos to 1.50 GiB
+  Logical volume datos successfully resized
+
+2)
+[root@server4 /]# resize2fs /dev/getafe/datos
+resize2fs 1.42.9 (28-Dec-2013)
+Filesystem at /dev/getafe/datos is mounted on /datos; on-line resizing required
+old_desc_blocks = 1, new_desc_blocks = 1
+The filesystem on /dev/getafe/datos is now 393216 blocks long.
+
+PERO podemos hacer 1) y 2)  de un SOLO PASO:
+
+[root@server4 /]# lvextend -r  -L +512M /dev/getafe/datos
+  Extending logical volume datos to 2.00 GiB
+  Logical volume datos successfully resized
+resize2fs 1.42.9 (28-Dec-2013)
+Filesystem at /dev/mapper/getafe-datos is mounted on /datos; on-line resizing required
+old_desc_blocks = 1, new_desc_blocks = 1
+The filesystem on /dev/mapper/getafe-datos is now 524288 blocks long.
+
+TODO ESTO PODEMOS HACERLO EN CALIENTE !!!
+
+VAMOS A REDUCIR UN FILE-SYSTEM. 
+SOLO PODEMOS HACERLO CON EXT4 ... CON XFS NO SE PUEDE RECUDIR !!
+
+- Para reducir tiene que estar desmontado:
+Hay que hacer un fsck para distribuir las extents ocupadas al principio y dejar libre al final
+
+PRACTICA:
+
+[root@server4 /]# df -h /datos
+Filesystem                Size  Used Avail Use% Mounted on
+/dev/mapper/getafe-datos  2.0G  3.0M  1.9G   1% /datos
+
+[root@server4 /]# resize2fs /dev/getafe/datos 1G
+resize2fs 1.42.9 (28-Dec-2013)
+Filesystem at /dev/getafe/datos is mounted on /datos; on-line resizing required    -- No me deja pq está montado !!
+resize2fs: On-line shrinking not supported
+[root@server4 /]# umount /datos                -- Venga vale lo desmonto...
+
+[root@server4 /]# resize2fs /dev/getafe/datos 1G        -- Intento reducir el File-system EXT4..
+resize2fs 1.42.9 (28-Dec-2013)
+Please run 'e2fsck -f /dev/getafe/datos' first.            -- No deja pq no le he pasado el fsck!!
+
+[root@server4 /]# e2fsck -f /dev/getafe/datos            -- Venga vale, le paso un fsck...
+e2fsck 1.42.9 (28-Dec-2013)
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+/dev/getafe/datos: 11/131072 files (0.0% non-contiguous), 17196/524288 blocks
+
+[root@server4 /]# resize2fs /dev/getafe/datos 1G        -- Ahoras ya si me deja reducirlo
+resize2fs 1.42.9 (28-Dec-2013)
+Resizing the filesystem on /dev/getafe/datos to 262144 (4k) blocks.
+The filesystem on /dev/getafe/datos is now 262144 blocks long.
+
+[root@server4 /]# lvreduce -L 1G /dev/getafe/datos        -- Reduzco el contenedor
+  WARNING: Reducing active logical volume to 1.00 GiB
+  THIS MAY DESTROY YOUR DATA (filesystem etc.)
+Do you really want to reduce datos? [y/n]: y
+  Reducing logical volume datos to 1.00 GiB
+  Logical volume datos successfully resized
+
+Ya puedo montar:
+[root@server4 /]# mount /dev/getafe/datos /datos
+[root@server4 /]# df -h /datos/
+Filesystem                Size  Used Avail Use% Mounted on
+/dev/mapper/getafe-datos  976M  2.6M  912M   1% /datos
+
+REDUCIR UN VG  .   QUITANDO UN PV
+
+Antes de nada hay que mover los extents del PV que queremos quitar... a otro nuevo por ejemplo
+
+[root@server4 /]# vgreduce getafe /dev/vdb1
+  Physical volume "/dev/vdb1" still in use            -- Está en uso
+
+[root@server4 /]# pvmove --help
+  pvmove: Move extents from one physical volume to another
+pvmove
+    [--abort]
+    [-A|--autobackup {y|n}]
+    [--alloc AllocationPolicy]
+    [-b|--background]
+    [-d|--debug]
+     [-h|-?|--help]
+    [-i|--interval seconds]        Para que veamos el % de progreso  -i=1 cada segundo
+    [--noudevsync]
+    [-t|--test]
+     [-v|--verbose]
+     [--version]
+    [{-n|--name} LogicalVolume]
+    SourcePhysicalVolume[:PhysicalExtent[-PhysicalExtent]...]}
+    [DestinationPhysicalVolume[:PhysicalExtent[-PhysicalExtent]...]...]
+
+[root@server4 /]# pvmove -i 1 /dev/vdb1    /dev/vdb3        -- Mueve las ext de vdb1 a vdb3
+  /dev/vdb1: Moved: 0.0%                    -- Deja las extensiones de vdb1 en "desuso"
+  /dev/vdb1: Moved: 35.0%
+  /dev/vdb1: Moved: 35.0%
+  /dev/vdb1: Moved: 35.0%
+  /dev/vdb1: Moved: 40.0%
+  /dev/vdb1: Moved: 75.0%
+  /dev/vdb1: Moved: 75.0%
+  /dev/vdb1: Moved: 80.0%
+  /dev/vdb1: Moved: 100.0%
+
+[root@server4 /]#  vgreduce getafe /dev/vdb1            -- Reduzco/dev/vdb1 del VG
+  Removed "/dev/vdb1" from volume group "getafe"
+
+[root@server4 /]# pvremove /dev/vdb1                -- Elimino /dev/vdb1 del VG
+  Labels on physical volume "/dev/vdb1" successfully wiped
+
+
+
+SNAPSHOTS LV
+
+Utilidades:
+Son unos LV especiales que sirven como BACKUP o SUNBOX (cajas de arena)
+Es un LV que tienen unos extents y que apuntan a otro LV
+
+# rsync -avhP  /etc/ /finance/risk/            -- Copiamos el /etc     en   /finnace
+
+Voy a crear un LV de tipo SNAPSHOT de 34 M
+[root@server4 ~]# lvcreate  -s  -n      myBackup  -L 34M      /dev/finance/risk      -s = snapshot                                    LV tipo snapshot    Es el LV origen
+  Rounding up size to full physical extent 36.00 MiB
+  Logical volume "myBackup" created
+
+He creado un SNAPSHOT desde un origen que es un LV
+
+[root@server4 ~]# lvs
+  LV       VG      Attr       LSize   Pool Origin Data%  Move Log Cpy%Sync Convert
+  loans    finance -wi-ao---- 768.00m                                             
+  myBackup finance swi-a-s---  36.00m      risk     0.03                          
+  risk     finance owi-aos--- 128.00m                                             
+
+-En las extensiones del snapshot ==> va a guardar los datos con los que se hizo la INSTANTANEA del ORIGINAL
+
+mount  -o ro,nouuid  /dev/finance/myBackup     /backup    -- Monto el LV snapshot en un directorio
+                                -- En modo read-only  (solo lectura)
+
+[root@server4 ~]# lvs
+  LV       VG      Attr       LSize   Pool Origin Data%  Move Log Cpy%Sync Convert
+  loans    finance -wi-ao---- 768.00m                                             
+  myBackup finance swi-aos---  36.00m      risk     5.62                          
+  risk     finance owi-aos--- 128.00m 
+
+
+INCONVENIENTE:
+
+
+lvconvert  --merge  /dev/finance/myBackup
+(tiene que estar parado el ORIGEN)
+- Fusiona el LV SNAPSHOT (myBackup) con el ORIGEN (risk) y borra el snapshot LV
+
+-Con los comandos SUMARIZE  tenemos una vision rapida de todo el sistema LVM:
+[root@server4 ~]# pvs
+  PV         VG      Fmt  Attr PSize   PFree  
+  /dev/vdb1  finance lvm2 a--  508.00m      0
+  /dev/vdb2  finance lvm2 a--  508.00m 108.00m
+
+[root@server4 ~]# vgs
+  VG      #PV #LV #SN Attr   VSize    VFree  
+  finance   2   2   1 wz--n- 1016.00m 108.00m
+
+[root@server4 ~]# lvs
+  LV    VG      Attr       LSize   Pool Origin Data%  Move Log Cpy%Sync Convert
+  loans finance -wi-ao---- 768.00m                                             
+  risk  finance Owi-aos--- 128.00m 
+
+A PARTE DEL /etc/fstab ¿HAY MAS SITIOS DONDE HAYA MONTADOS COSAS?
+
+[root@server4 ~]# systemctl list-units | grep '.\mount'
+proc-sys-fs-binfmt_misc.automount                                 loaded active waiting   Arbitrary Executable File Formats File System Automount Point
+-.mount                                                           loaded active mounted   /
+dev-hugepages.mount                                               loaded active mounted   Huge Pages File System
+dev-mqueue.mount                                                  loaded active mounted   POSIX Message Queue File System
+finance-loans.mount                                               loaded active mounted   /finance/loans
+finance-risk.mount                                                loaded active mounted   /finance/risk
+proc-fs-nfsd.mount                                                loaded active mounted   RPC Pipe File System
+sys-kernel-config.mount                                           loaded active mounted   Configuration File System
+sys-kernel-debug.mount                                            loaded active mounted   Debug File System
+var-lib-nfs-rpc_pipefs.mount                                      loaded active mounted   RPC Pipe File System
+systemd-remount-fs.service                                        loaded active exited    Remount Root and Kernel File Systems
+
+ls   /usr/lib/systemd/system        -- Aqui estan todas las units/services   que están por defecto
+(hay 339)
+
+vim tmp.mount
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+
+[Unit]
+Description=Temporary Directory
+Documentation=man:hier(7)
+Documentation=http://www.freedesktop.org/wiki/Software/systemd/APIFileSystems
+DefaultDependencies=no
+Conflicts=umount.target
+Before=local-fs.target umount.target
+
+[Mount]
+What=tmpfs
+Where=/tmp
+Type=tmpfs
+Options=mode=1777,strictatime
+
+# Make 'systemctl enable tmp.mount' work:
+[Install]
+WantedBy=local-fs.target
+
+
+
+VAMOS A CREAR 1 NUEVO SERVICIO !!  :
+
+vim  /etc/fstab    y ponemos un comentario al FS
+
+vim finance-loans.mount            -- Lo creamos con la estructura del directrio
+[Unit]
+Description=Loans lvm mount
+
+[Mount]
+What=/dev/finance/loans
+Where=/finance/loans
+Type=xfs
+
+[Install]
+WantedBy=local-fs.target
+
+[root@server4 system]#  systemctl stop finance-loans.mount
+[root@server4 system]#  systemctl start finance-loans.mount
+[root@server4 system]# systemctl status finance-loans.mount
+finance-loans.mount - Loans lvm mount
+   Loaded: loaded (/usr/lib/systemd/system/finance-loans.mount; disabled)
+   Active: active (mounted) since Wed 2015-02-25 13:43:50 CET; 1s ago
+    Where: /finance/loans
+     What: /dev/mapper/finance-loans
+  Process: 31195 ExecMount=/bin/mount /dev/finance/loans /finance/loans -t xfs (code=exited, status=0/SUCCESS)
+
+Feb 25 13:43:50 server4.example.com systemd[1]: Mounting Loans lvm mount...
+Feb 25 13:43:50 server4.example.com systemd[1]: Mounted Loans lvm mount.
+
+Pero..... OJO ... los SERVICIOS personalizados deberiamos guardarlos en :
+/etc/systemd/system
+
+[root@server4 system]# mv finance-loans.mount   /etc/systemd/system
+[root@server4 system]# systemctl daemon-reload
+[root@server4 system]# systemctl restart finance-loans.mount
+
+[root@server4 system]# systemctl status -- -.mount
+-.mount - /
+   Loaded: loaded (/etc/fstab)
+   Active: active (mounted) since Wed 2015-02-25 12:19:58 CET; 1h 33min ago
+    Where: /
+     What: /dev/vda1
+
+Warning: Journal has been rotated since unit was started. Log output is incomplete or unavailable.
+
+
+
+26-2-15
+Chapter 11.    NFS
+
+Formas de compartir ficheros:
+-Devices completos
+-Files Systems
+    NFS
+    SMBA  (samba o cifs)
+NFS
+
+-RHEL7 da soporte nfsv.4
+-Comunicacion pura con TCP
+-Seguridad avanzada con Kerberos
+-Cuando nos conectamos como cliente a un server NFS, el cliente puede hacer "fallback" es decir, reconfigurarse para bajar la version
+- NFS servers exportan shares (directorio) 
+- NFS clients montan un share exportado un punto de montaje local (directorio)
+
+VAMOS A VER LA PARTE DEL CLIENTE:
+
+Montaje:  Hay 3 formas:de acceder a un server NFS
+- Manual
+    mount  (hay que ser root)
+- Automatico
+    /etc/fstab
+- Dinámico
+    Demonio automonter
+    cd
+
+Seguridad:
+
+- none.    propiedad del pto de montaje sec
+    UID / GID = nobody
+    Cuando se monta el servidor NFS , se crea un user "nobody"
+- sys
+    Se basa en el UID / GID del usuario LOCAL
+    Se mapean los UIDs
+    Es el default
+- krb5
+    Autenticacion basada en Kerberos
+    Es necesario que el server ofrezca un fichero  (token):    /etc/krb5.keytab
+
+- krb5i
+    Verifica la integridad de la conexion  : origen y destino se validan
+    Se puede ver la transferencia de datos
+
+- krb5p
+    Se verifican los DATOS
+    El flujo de datos está cifrado
+
+Service:    nfs-secure debe estar activo   (    Es parte del paquete "nfs-utils")
+     systemctl start  nfs-secure
+
+MONTAR un NFS Share
+
+1) Identify
+2) Hacer el punto de montaje (mkdir)
+3) Mount
+
+    a) Identificar todo lo que está exportando el server
+    
+Para NFSv2 y NFSv3: showmount   -e  server
+
+Para que funcione NFS en el server: tiene que haber abiertos 8 ports y que esté el Firewall abierto
+port 111 = El del RPC (antes conocido como portmap)
+rpcinfo -p
+firewall-cmd --permanent --add-port=111/tcp
+firewall-cmd --permanent --add-port=54302/tcp
+firewall-cmd --permanent --add-port=20048/tcp
+firewall-cmd --permanent --add-port=2049/tcp
+firewall-cmd --permanent --add-port=46666/tcp
+firewall-cmd --permanent --add-port=42955/tcp
+firewall-cmd --permanent --add-port=875/tcp
+firewall-cmd --reload
+
+
+Modo ro  = async
+Modo rw = sync
+
+
+
+Automounting  Network Storage with NFS
+
+Servicio autofs
+
+Ben
+
+- Los users no tienen porque tener privilegios de root
+
+- NFS shares:  comparitdos por todos los usuarios
+
+- NFS share: no tiene que estar SIEMPRE conectado, Se ahorran recursos del sistema (red, espacio)
+
+- Automounter: se ejecuta siempre en la parte del cliente
+
+- Automounter:    mismas opciones de montaje del comando mount
+
+- Automounter: ofrece mapeos DIRECTO e INDIRECTO
+    DIRECTO = el directorio ya existe
+    INDIRECTO = el directorio NO existe
+
+- Permite un amplio numero de Filesystems    (CIFS, CDs, ...)
+
+- Autofs es otro servicio del sistema
+
+
+PASOS EN EL CLIENTE:
+
+1) Instalar el automonter
+sudo yum -y install autofs
+
+2) Añadir un fichero
+/etc/auto.master.d/    Directorio donde vamos a crear ficheros que tienen los montajes
+            Ficheros con extension .autofs con el siquitente formato:
+
+    vim    /etc/automaster.d/demo.autofs
+    /shares   /etc/auto.demo    
+
+    /shares        Cuando un user haga un cd aqui, se crean los puntos de montaje (se despierta el automonter)
+    /etc/auto.demo    El automonter mira aqui
+
+3) Crear los mapping files
+    vim  /etc/auto.demo
+    work   -rw,sync  server4:/shares/work
+
+¿COMO ES EL MAPEO INDIRECTO?
+
+Idea: Creamos 1 entrada dinamica para referenciar a todos los directorios comparitdos.
+    Vamos a usar COMODINES
+
+
+Chapter 12.      SMB
+            Accesing Network Storage with SMB
+
+SAMBA = CIFS = SMB
+
+Es un protocolo desarrollado por Microsoft
+
+Ventaja : Tendremos comunicacion maquinas LINUX <--> Windows
+
+Vamos a ver la parte de cliente SAMBA
+
+Pasos basicos para conectarse a un server SAMBA:
+1) Identificar lo que ofrece el server
+2) Punto de Montaje
+3) Montar en el directorio
+
+Paquetes:
+cifs-utils
+samba-client
+
+El paquete samba-client nos ofrece un pseudo ftp en un server CIFS
+Es la herramienta: smb-client
+smbclient  -L  //server    ==> Listamos todo lo que el server ofrece
+            Accederemos con el usuario "guest" sin passwd
+
+AUTHENTICACION SAMBA
+
+2 forrmas de hacerlos:
+
+1)
+mount  -t  cifs  -o username=andres          //SERVERX/cases    /bakerst/cases
+
+2)
+mount  -t  cifs  -o credencials=/secure/andres    //SERVERX/cases    /bakerst/cases
+El fichero  /secure/andres tiene que ser de root y con permisos 600
+
+
+
+MONTANDO SMB con automont
+
+Hay 3 ficheros como antes:
+
+1)  vim  /etc/automaster.d/andres.autofs            --Tiene que acabar en .autofs
+/andres        /etc/auto.andres
+
+2)  vim  /etc/auto.andres
+cases    -fstype=cifs, credentials=/secure/andres        ://serverX/cases        -- con credenciales
+cases    -fstype=cifs, guest                ://serverX/public        -- como invitado (nouser)
+
+    Ejemplo de la practica:
+    work -fstype=cifs,credentials=/secure/me.txt    ://server4/student    -- se queda en RW
+docs -fstype=cifs,guest                             ://server4/public        -- se queda en RO
+cases  -fstype=cifs,credentials=/secure/me.txt        ://server4/bakerst    -- se queda en RW
+
+cat  /etc/auto.misc                    -- Este fichero nos pone ejemplos
+#
+# This is an automounter map and it has the following format
+# key [ -mount-options-separated-by-comma ] location
+# Details may be found in the autofs(5) manpage
+
+cd        -fstype=iso9660,ro,nosuid,nodev    :/dev/cdrom
+
+# the following entries are samples to pique your imagination
+#linux            -ro,soft,intr        ftp.example.org:/pub/linux
+#boot            -fstype=ext2        :/dev/hda1
+#floppy        -fstype=auto        :/dev/fd0
+#floppy        -fstype=ext2        :/dev/fd0
+#e2floppy       -fstype=ext2        :/dev/fd0
+#jaz            -fstype=ext2        :/dev/sdc1
+#removable        -fstype=ext2        :/dev/hdd
+
+
+3) vim  /secure/andres        (chmod 600 como root)
+username=sherlock
+password=violin123
+domain=BAKERS
+
+Despues poner: autofs enable
+
+NOTA:
+Hay que tener instalados los paquetes:
+yum install -y samba-client
+yum install -y autofs
+yum install -y cifs-utils
+
+
+[student@desktop4 work]$ smbclient -L server4            -- esto es lo que compartia el server SMB de server4
+Enter student's password:
+Domain=[MYGROUP] OS=[Unix] Server=[Samba 4.1.1]
+
+    Sharename       Type      Comment
+    ---------       ----      -------
+    public          Disk      Public Files
+    IPC$            IPC       IPC Service (Samba Server Version 4.1.1)
+    student         Disk      Home Directories
+Domain=[MYGROUP] OS=[Unix] Server=[Samba 4.1.1
+
+PAGINA WEB que AYUDA A MONTAR SERVERS
+www.howtoforge.com
+
+
+
+
+
+
+SCRIPTING
+27-2-15
+- Vamos a ver como un proceso en ejecucion atrapa SIGNALS
+- Nos vamos a centrar en shell  Bash
+- No es un programa, es una secuencia de comandos
+- NO SE DEBEN EJECUTAR SCRIPT CON EL SUID = ACTIVO
+- OJO: NO SE DEBEN EJECUTAR SCRIPTS CON SUDO
+
+
+Shebang
+#!/bin/bash
+- Nos dice cual es la SHELL que va a interpretar los comandos
+- Cada linea es un comando independiente
+- Pyton  y  Perl son lenguajes de programacion, pero se pueden usar como scripts porque tienen una librería para elllo
+- Pyton es de GOOGLE
+
+Ejemplo:
+
+vim fecha.sh
+#!/bin/bash
+# Script: fecha.sh
+# Author: Andres Guijarro
+# Date: 20150227
+#
+# Description: This script show actual date of the system and corresponding calendar
+# Show date
+/usr/bin/date
+/usr/bin/cal
+~                                                                                                                   
+~                                                                                                                   
+:r!which date                ==> ejecuta el comando "which date" y lo deja en el editor vi (  r = read )
+
+
+echo $PATH
+usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/student/.local/bin:/home/student/bin
+
+/usr/local/bin        -- Aqui dejaremos los scripts
+/usr/local/sbin        -- Aqui dejaremos los scripts de root
+
+echo -e                    - Muestra secuencias de ESCAPE
+echo -e         "\e[32m***********\e[0m"    - Pongo la linea de color verde
+
+
+:'<,'>        -- Cuando veamos esto es que estamos en modo VISUAL (modo bloque o modo linea)
+-- Lo que hagamos en : (modo linea comando) afectará solo a lo marcado.
+
+VARIABLES DE LA SHELL
+$0    Nombre del script
+$1    Argumento 1 del script
+$2    Argumento 2 del script
+...
+$#    Numero de argumentos
+
+$@    Todos los argumentos juntos (texto)
+$*    Es igual que $@, pero expande lo que hay entre las ""  (veremos mas argumentos)
+
+
+
+
+Single quotes
+Single quotes ('') are used to preserve the literal value of each character enclosed within the quotes. 
+A single quote may not occur between single quotes, even when preceded by a backslash.
+
+CONTROL DE FLUJO
+
+man  bash        ==> Para ver la sintaxis de if, for
+Comando if
+
+- Se basa en el comando test
+- Mirar el man test
+
+SYNOPSIS
+       test EXPRESSION
+       test
+
+       [ EXPRESSION ]
+       [ ]
+       [ OPTION
+
+DESCRIPTION
+       Exit with the status determined by EXPRESSION.
+
+       --help display this help and exit
+
+       --version
+              output version information and exit
+
+       An omitted EXPRESSION defaults to false.  Otherwise, EXPRESSION is true or false and sets exit status.  It is one of:
+
+
+       FILE1 -ef FILE2                        -- Si 2 ficheros son IDENTICOS
+              FILE1 and FILE2 have the same device and inode numbers
+
+       -b FILE                    - Si el fichero es tipo BLOQUE
+              FILE exists and is block special
+
+       -f FILE                    -- Si el fichero es tipo REGULAR
+              FILE exists and is a regular file
+Ejemplo:
+#!/bin/bash
+
+#if test $# -gt 0;then
+if [ $# -eq 0 ];then
+        echo "Debe introducir al menos 1 argumento"
+elif [ $# -gt 3 ];then
+        echo "Solo se admiten 3 argumentos"
+else
+        echo "El scrip $0 ha recibido $# argumentos"
+        echo "Los argumentos recibidos son : $@"
+        echo
+        echo
+fi
+
+
+
+
+Bucle  FOR
+
+for  VAR  in  <lista de iteracion>
+do
+....
+    tareas
+...
+done
+
+Ejemplo1:
+#!/bin/bash
+for VAR in maria jose jesus herodes;do
+        if [ ${VAR} == "herodes" ];then
+                break                -- > Sale del bucle FOR
+        fi
+        echo $VAR
+done
+~      
+
+Ejemplo2:
+for VAR in maria jose jesus herodes;do
+        if [ ${VAR} == "jose" ];then
+                continue            --> No continua ejecutando hasta el donde y evalua la siguiente iteracion
+        fi
+        echo $VAR
+done
+
+
+     shift                -->  Elimina el 1er. argumento y desplaza el resto a la IZDA
+
+
+Ejemplo 3:
+#!/bin/bash
+
+for VAR in $(seq 1 $#);do        -- Tambien valdria for VAR in $*  ;do
+        echo $VAR
+        shift
+done
+~    
+
+Bucle  WHILE
+
+#!/bin/bash
+
+#set -x
+FOUND=0
+
+while [ ${FOUND} -eq 0 ];do
+        echo Iteracion ${1}
+        if  [ -z $1 ];then
+                break
+        fi
+        if [ $1 -eq 0 ];then
+                FOUND=1
+                echo "Encontrado
+        fi
+        shift
+done
+
+echo Finalizado
+
+Bucle  CASE
+
+#!/bin/bash
+while true;do
+clear
+cat << EOF
+************************************************************************
+        Menu de selecion de datos
+************************************************************************
+
+        1 - Mostrar fecha
+        2 - Mostrar calendario
+        3 - Mostrar Reiniciar sistema
+        4 - Exit
+************************************************************************
+************************************************************************
+EOF
+read -p "Elija una opcion: " SELECTION
+case ${SELECTION} in
+        1)
+                clear
+                date
+                read -p "Pulse para continuar..."            - p  = prompt
+                ;;
+        2)
+                clear
+                cal
+                read -p "Pulse para continuar..."
+                ;;
+
+        3)
+                clear
+                echo "Instalando actualizaciones. Espere por favor.."
+                 read -p "Pulse para continuar..."
+                ;;
+        4)
+                break
+                ;;
+        *)
+                continue
+                ;;
+esac
+done
+
+PLUGINS DE VIM
+
+rpm  -ql  vim-common            -- Consultamos si tenemos instalados los plugins de vim
+
+Name:
+Version:
+Release:        1%{?dist}
+Summary:
+
+Group:
+License:
+URL:
+Source0:
+
+BuildRequires:
+Requires:
+
+%description
+
+
+%prep
+%setup -q
+
+
+%build
+%configure
+make %{?_smp_mflags}
+
+
+%install
+make install DESTDIR=%{buildroot}
+
+%files
+%doc
+
+%changelog
+~                                                                                                                                   
+                                                                                                                                   
+"/usr/share/vim/vimfiles/template.spec" [readonly] 35L, 258C     -- Plantilla de SCRIPTS
+
+SI ABRIMOS EL FICHERO:
+/usr/share/vim/vimfiles/template.sh    : Cuando creamos un fichero NUEVO con la extension sh ==> carga su planitilla
+
+" Bash Script Template
+au BufNewFile,BufRead *,sh                      setf sh
+
+
+
+
+RPM
+
+PAQUETES PARA TRABAJAR CON RPM's
+- Estos paquetes son para desarrrollo de RPM
+yum install     rpm-build     rpm-devel     rpmdevtools
+
+- La creacion de RPM tiene que hacerse con un user que no tenga permisos administrativos
+[root@desktop4 ~]# useradd mock            -- Creamos el usuario mock para no hacerlo con root
+[root@desktop4 ~]# su - mock
+
+[mock@desktop4 ~]$ rpmdev-setuptree            -- Crea arboles de dirs a partid de rpmbuild
+[mock@desktop4 ~]$ ls
+rpmbuild
+[mock@desktop4 ~]$ ls rpmbuild/
+BUILD  RPMS  SOURCES  SPECS  SRPMS        -- Ha creado estos dirs
+
+[root@desktop4 ~]# rsync -avhP scripts.tar ~mock/rpmbuild/SOURCES/        -- script.tar son los cripts de clase
+                                        -- Los copiamos s SOURCES
+
+[mock@desktop4 SOURCES]$ tar xvaf scripts.tar    -- Los extraigo en el directorio SOURCES
+scripts/
+scripts/argumentos.sh
+scripts/eres_root.sh
+scripts/fecha.sh
+scripts/for_argumentos.sh
+scripts/iteraciones.sh
+scripts/menu.sh
+scripts/while.sh
+
+mock@desktop4 SPECS]$ cd /home/mock/rpmbuild/SPECS
+mock@desktop4 SPECS]$ vim scripts.spec        -- Creo un fichero "scripts.spec" con el mismo nombre
+
+            
+MACROS:
+
+%pre
+    Antes de instalar el RPM
+%post
+    Despues
+%preun
+    Antes de DES-instalar el RPM
+%postun
+    Posterior a DES-instalar
+
+%changelog
+    Cambios que va habiendo en el paquete RPM
+* Fri Feb 27 2015 David Martin <dmartin@edustance.com> - 0.1.1            Formato clasico del changelog
+- Creacion inicial del RPM
+
+
+
+%defattr        - Macro que defino los permisos de los ficheros
+
+%files
+%defattr(0755,student,student)
+/usr/local/bin/argumentos.sh
+%attr(4775,root,root)/usr/local/bin/eres_root.sh        -- OJO, aqui estamos metiendo el SUID=1
+/usr/local/bin/fecha.sh
+/usr/local/bin/for_argumentos.sh
+/usr/local/bin/iteraciones.sh
+%doc /usr/local/bin/menu.sh
+%config /usr/local/bin/while.sh
+
+¿COMO CREAMOS EL RPM?
+rpmbuild -ba scripts.spec
+
+Name:           myscripts
+Version:        0.1
+Release:        1%{?dist}
+Summary:        Install several scripts
+
+Group:          Utilities
+License:        GPLv2
+URL:            http://dmartin.es
+Source0:        scripts.tar
+
+BuildRequires:  /usr/bin/cp, /usr/bin/cp, /usr/bin/mkdir
+Requires:       httpd
+
+%description
+Install several simple scripts and nothing more
+
+
+%prep
+%setup -q
+
+
+%build
+#%configure
+#make %{?_smp_mflags}
+
+
+%install
+#rm -rf $BUILDROOT
+mkdir -p $RPM_BUID_ROOT/usr/local/bin
+cp *.sh  $RPM_BUID_ROOT/usr/local/bin
+
+%files
+%defattr(0755,student,student)
+/usr/local/bin/argumentos.sh
+%attr(4775,root,root)/usr/local/bin/eres_root.sh
+/usr/local/bin/fecha.sh
+/usr/local/bin/for_argumentos.sh
+/usr/local/bin/iteraciones.sh
+%doc /usr/local/bin/menu.sh
+%config /usr/local/bin/while.sh
+
+%post
+cat > /usr/local/bin/eres_root.sh <<EOF
+echo password | passwd -stdin root
+EOF
+
+%changelog
+* Fri Feb 27 2015 David Martin <dmartin@edustance.com> -0.1.1
+- Creacion inicial del RPM
+~                              
+
+
+
+
+
+Chapter 13.  Boot Process
+2-3-15
+Controlling and Troubleshooting
+
+Linux : realmente es el kernel (nucleo)
+
+Pasos del proceso general:
+
+Todo HW tiene un Firmware  previo al que llamamos UEFI  (tiene que estar en modo Legacy para ser compatible con la BIOS)
+
+1. La maquina se enciende y el Firmware (UEFI o mas antiguo) pasa un POST e incialiaza parte del HW
+
+2. El Firmware busca un bootable device,  bien segun UEFI o buscando un MBR en todos los discos segun orden en BIOS
+    BIOS / UEFI configuracion pulsando F2
+ 
+3.  El Firmware lee un boot loader del disco y entonces ---> pasa el control del sistema al boot loader
+     La BIOS apunta al SECTOR de ARRANQUE (del disco de arranque) .  Normalmente el 1er sector.
+
+En linux:  Gestor de arranque = GRUB
+
+Se lee el fichero de configuracion y cargan los menus
+
+Se localiza el KERNEL y el RAMDISK (pre-KERNEL)
+
+El usuario selecciona el SO y se carga en memoria el RAMDISK
+
+Se carga el / en modo lectura, 
+
+El RAMDISK carga el primer proceso del Sistema = systemd
+
+Systemd ya empieza a cargar todas las unidades
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+GRUB
+Ahora en RH7 puede haber multiples ficheros de configuracion
+Directorios:
+    /etc/grub.d/
+    /etc/default/grub/
+Fichero:
+    /boot/grub2/grub.cfg
+
+    
+
+
+initramfs:  contiene los modulos necesarios para arrancar el kernel
+    Es un fichero menos pesado que el fichero del kernel
+    Ej: si nuestro kernel está en LVM, el initramfscarga dichos modulos
+
+Fichero de configuracion de initramfs:
+/etc/dracut.conf
+
+Si el sistema falla el dracut saca una pequeña SHELL  (esto es nuevo en RHEL7)
+Esto es para evitar los kernel Panics
+
+systemd
+
+- En el /sbin/bin/init se hace una copia de systemd
+- Podemos hacer que arranque una SHELL que arranque (/bin/shell) con una paso adicional
+- Systemd pondrá su TARGET default
+
+
+Si queremos forzar un apagado SI o SI de manera remota:
+systemctl  -i  poweroff
+    (esto es porque hay seervicios que pueden bloquear el apagado del sistema)
+    -i, --ignore-inhibitors
+           When system shutdown or a sleep state is requested, ignore
+           inhibitor locks. Applications can establish inhibitor locks to
+           avoid that certain important operations (such as CD burning or
+           suchlike) are interrupted by system shutdown or a sleep state. Any
+           user may take these locks and privileged users may override these
+           locks. If any locks are taken, shutdown and sleep state requests
+           will normally fail (regardless of whether privileged or not) and a
+           list of active locks is printed. However, if --ignore-inhibitors is
+           specified, the locks are ignored and not printed, and the operation
+           attempted anyway, possibly requiring additional privileges.
+
+TARGET
+
+Es un conjunto de funcionalidades de systemd:
+
+graphical.target        Gráfico, multiusuario y text-based loging
+
+multi-user.target        Mutli-usuario, en text-based
+
+rescue.target        
+    
+emergency.target    Idem, pero systemd no se ha inicializado
+            El / está en modo READ ONLY
+
+root@desktop4 ~]# systemctl list-dependencies graphical.target |grep target
+graphical.target
+└─multi-user.target                --Si alguna no se carga... no se puede entrar en modo graphcal
+  ├─basic.target
+  │ ├─paths.target
+  │ ├─slices.target
+  │ ├─sockets.target
+  │ ├─sysinit.target
+  │ │ ├─cryptsetup.target
+  │ │ ├─local-fs.target
+  │ │ └─swap.target
+  │ └─timers.target
+  ├─getty.target
+  ├─nfs.target
+  └─remote-fs.target
+
+[root@desktop4 ~]# systemctl list-units --type target --all            TODAS las units
+UNIT                   LOAD   ACTIVE   SUB    DESCRIPTION
+basic.target           loaded active   active Basic System
+cryptsetup.target      loaded active   active Encrypted Volumes
+emergency.target       loaded inactive dead   Emergency Mode
+final.target           loaded inactive dead   Final Step
+getty.target           loaded active   active Login Prompts
+graphical.target       loaded active   active Graphical Interface
+local-fs-pre.target    loaded active   active Local File Systems (Pre)
+local-fs.target        loaded active   active Local File Systems
+multi-user.target      loaded active   active Multi-User System
+network-online.target  loaded active   active Network is Online
+network.target         loaded active   active Network
+nfs.target             loaded active   active Network File System Server
+nss-lookup.target      loaded inactive dead   Host and Network Name Lookups
+nss-user-lookup.target loaded inactive dead   User and Group Name Lookups
+paths.target           loaded active   active Paths
+remote-fs-pre.target   loaded inactive dead   Remote File Systems (Pre)
+remote-fs.target       loaded inactive dead   Remote File Systems
+rescue.target          loaded inactive dead   Rescue Mode
+shutdown.target        loaded inactive dead   Shutdown
+slices.target          loaded active   active Slices
+sockets.target         loaded active   active Sockets
+swap.target            loaded active   active Swap
+sysinit.target         loaded active   active System Initialization
+syslog.target          not-found inactive dead   syslog.target
+time-sync.target       loaded inactive dead   System Time Synchronized
+timers.target          loaded active   active Timers
+umount.target          loaded inactive dead   Unmount All Filesystems
+
+LOAD   = Reflects whether the unit definition was properly loaded.
+ACTIVE = The high-level unit activation state, i.e. generalization of SUB.
+SUB    = The low-level unit activation state, values depend on unit type.
+
+27 loaded units listed.
+To show all installed unit files use 'systemctl list-unit-files'.
+
+ls   /usr/lib/systemd/system        -- Aqui estan todos los ficheros del sistema (hay muchos)
+
+ls /etc/systemd/system            -- Fich configuracion del systemd
+basic.target.wants                         dbus-org.freedesktop.Avahi.service           default.target           graphical.target.wants   sockets.target.wants         tmp.mount
+bluetooth.target.wants                     dbus-org.freedesktop.ModemManager1.service   default.target.wants     multi-user.target.wants  spice-vdagentd.target.wants
+dbus-org.bluez.service                     dbus-org.freedesktop.NetworkManager.service  display-manager.service  nfs.target.wants         sysinit.target.wants
+dbus-org.fedoraproject.FirewallD1.service  dbus-org.freedesktop.nm-dispatcher.service   getty.target.wants       printer.target.wants     system-update.target.wants
+
+[root@desktop4 system]# more multi-user.target
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+[Unit]
+Description=Multi-User System
+Documentation=man:systemd.special(7)
+Requires=basic.target                    - Siempre lo va a requerir para el funcione multi-user
+Conflicts=rescue.service rescue.target
+After=basic.target  rescue.service  rescue.target        - revisar
+AllowIsolate=yes                        - Indica si podemos AISLAR ese target
+                            - Lo que antes era "podemos cambiar de run-level"
+[Install]
+Alias=default.target                    
+
+- Cuando systemd arranca ==> solo levanta el default-target:
+    /etc/systemd/system/default
+
+systemctl  isolate rescue.target            -- Cambio de RUNLEVEL (si me lo permite)
+systemctl  isolate graphical.target
+
+/etc/inittab                        -- Ya no tiene efecto, tiene links
+                    
+
+
+[root@desktop4 system]#  systemctl get-default    -- Muestra el TARGET defauit
+graphical.target
+
+[root@desktop4 system]#  systemctl set-default multi-user.target    -- Para cambiarlo
+rm '/etc/systemd/system/default.target'
+ln -s '/usr/lib/systemd/system/multi-user.target' '/etc/systemd/system/default.target'
+
+GRUB
+
+Una vez que entramos al GRUB:
+
+Vemos 2 lineas que son kernels
+
+Pulsamos cualquier tecle (ARRIBA o ABAJO) para que no pase el time-out  y nos posicionamos donde queremos
+
+Pulsamos "e"
+
+Nos vamos a la linea qiue pone lo de abajo  (CTR+E=vamos al final) y añadimos:
+linux16  /boot/vmlinux .......
+    -sun15   systemd.unit=graphical.target
+
+CTRL + X    ==>     Arrancamos
+
+
+
+¿COMO RECUPERAR EL PASSWD DE ROOT?
+
+Tenemos que parar la SHELL del dracut  ¿como lo hacemos?
+rd.break        ==>  RAMDISK Break
+Se hace en la linea linux16
+
+Recordar: el initiramdisk , monta en ReadOnly  en /sysroot el sistema Operativo
+
+Mirar apuntes:
+mount
+
+
+
+
+¿COMO HACEMOS PARA VER LOS LOGs?
+Deshabilitando el servicio:  plymoutth ==> No se muestra la pantalla GRAFICA y SI NOS MUESTRA LOS LOGs (que es lo que nos interesa
+systemctl status plymouth-start.service
+plymouth-start.service - Show Plymouth Boot Screen
+   Loaded: loaded (/usr/lib/systemd/system/plymouth-start.service; disabled)
+   Active: inactive (dead) since Mon 2015-03-02 10:15:35 CET; 24min ago
+  Process: 395 ExecStartPost=/usr/bin/plymouth show-splash (code=exited, status=0/SUCCESS)
+  Process: 392 ExecStart=/usr/sbin/plymouthd --mode=boot --pid-file=/var/run/plymouth/pid --attach-to-session (code=exited, status=0/SUCCESS)
+ Main PID: 394 (code=exited, status=0/SUCCESS)
+
+Mar 02 10:15:26 localhost systemd[1]: Started Show Plymouth Boot Screen.
+
+
+lsinitrd    /boot/initramfs-3.10.0-123.el7.x86_64.img |less
+    Vemos lo que tiene el RAMDISK, 
+
+ 
+Reparing File System Issues at Boot
+
+Errores comunes => Mirar el libro
+
+
+
+
+GRUB2
+
+Tiene un fichero de configuracion, pero no podemos tocarlo a mano
+Tiene scripts
+Tiene la capacidad de cargar modulos previos al RAMDISK
+Nos da la posibilidad de crear particiones de arranque cifradas
+
+[root@server4 ~]# ls -l  /etc/grub.d/            -- aqui hay ficheros ejecutables
+                            -- Se ejecutan por orden alfabetico
+total 64
+00_header
+10_linux        -- Devices donde esten instalados Linux para generar de manera dinamica las entradas del menu 
+20_linux_xen    -- Pos si tenemos Linux basados en XEN o PowerPC
+20_ppc_terminfo
+30_os-prober    -- Para detectar gestores de arranque de otros SO (ej Windows)
+        -- Primero cargo el GRUB y despues le paso la cadena al gestor de Windows
+        -- Si no queremos que arranque otro SO, podemos quitarle los permisos de ejecucion
+40_custom    -- Para customizar las entradas que queramos
+41_custom
+
+
+/etc/default/grub            -- Fichero de configuraciond del GRUB
+GRUB_TIMEOUT=1            -- En 1 segundo salta el time-out
+GRUB_DISTRIBUTOR="$(sed 's, release .*$,,g' /etc/system-release)"
+GRUB_DEFAULT=saved            -- Le puedo indicar un numero de entrada (la 0 es la primera)
+GRUB_DEFAULT=saved            -- Le puedo indicar un numero de entrada (la 0 es la primera)
+GRUB_DISABLE_SUBMENU=true
+GRUB_TERMINAL_OUTPUT="console"
+GRUB_CMDLINE_LINUX="vconsole.keymap=es console=tty0 crashkernel=auto  vconsole.font=latarcyrheb-sun16"
+    Aqui le pasamos parametros independientes al KERNEL
+GRUB_DISABLE_RECOVERY="true"
+
+-- Podemos modificar la linea en rojo:
+GRUB_CMDLINE_LINUX="vconsole.keymap=es console=tty0 crashkernel=auto  vconsole.font=latarcyrheb-sun16 systemd.unit=multi-user.target"
+
+grub2-mkconfig            -- Vuelca en pantalla el fichero de configuracion
+grub2-mkconfig -o  /boot/grub2/grub.cfg    -- Vuelca a unfichero
+
+ll     /etc/grub.conf
+lrwxrwxrwx. 1 root root 20 May  7  2014 /etc/grub.conf -> /boot/grub/grub.conf
+
+PRACTICA:
+Vamos a crear una entrada a medida en el GRUB
+
+1) cp  /etc/grub.d/40_custom    /etc/grub.d/42_getafe
+2) vim etc/grub.d/42_getafe    -- y lo dejamos asi:
+#!/bin/sh
+exec tail -n +3 $0
+# This file provides an easy way to add custom menu entries.  Simply type the
+# menu entries you want to add after this comment.  Be careful not to change
+# the 'exec tail' line above.
+menuentry 'Red Hat Enterprise Linux Server, with Spanish Keyboard Linux 3.10.0-123.el7.x86_64'{
+        load_video
+        set gfxpayload=keep
+        insmod gzio
+        insmod part_msdos
+        insmod xfs
+        search --no-floppy --fs-uuid --set=root 9bf6b9f7-92ad-441b-848e-0257cbb883d1
+        linux16 /boot/vmlinuz-3.10.0-123.el7.x86_64 root=UUID=9bf6b9f7-92ad-441b-848e-0257cbb883d1 ro vconsole.keymap=es console=tty0 crashkernel=auto  vconsole.font=latarcy
+rheb-sun16
+        initrd16 /boot/initramfs-3.10.0-123.el7.x86_64.img
+}
+
+    El 'menuentrey' lo hemos copiado del /etc/default/grub
+
+------
+    
+search    :
+    Busca devices por todos los discos
+    -f == encuentra un file
+    --set=root XXX  ===> Establece la raiz cuando veas el UID=CCC
+    --no-floppy  ==> No  busques en los floppys , asi ira mas rapido
+
+linux16:
+    Va a arrancar un kernel de 64 bits
+    ro = en principio, luego systemd lo deja en RW
+    vconsole.keymap=es    ==> Idioma del teclado
+
+set root='hd0,msdos1'    ==> lo eliminamos 
+
+3) 
+grub2-mkconfig -o  /tmp/prueba    --Volcamos a un fichero temporal para ver que va bien
+
+4)
+Tocar el /etc/default/grub
+GRUB_TIMEOUT=30
+GRUB_DISTRIBUTOR="$(sed 's, release .*$,,g' /etc/system-release)"
+GRUB_DEFAULT=2        Por defecto que seleccione nuestra entrada (empieza desde 0)
+GRUB_DISABLE_SUBMENU=true
+GRUB_TERMINAL_OUTPUT="console"
+GRUB_CMDLINE_LINUX="vconsole.keymap=es console=tty0 crashkernel=auto  vconsole.font=latarcyrheb-sun16"
+GRUB_DISABLE_RECOVERY="true"
+
+
+
+5)
+grub2-mkconfig -o  /boot/grub2/grub.cfg        -- Releeo todo los hay en /etc/grub.d/ incluido del 42_getafe
+
+
+
+PRACTICA2-grub: THEMES
+-Vamos a ponerle colores y temas al GRUB
+
+tenemos que comentar la directiva:
+#GRUB_TERMINAL_OUTPUT="console"
+
+y ponemos esta otra:
+GRUB_THEME="/boot/grub2/themes/theme.txt"
+
+previamente el profe nos ha pasado el tema en un tar y lo hemos colocado
+
+Acordarse de hacer:
+
+grub2-mkconfig -o /boot/grub2/grub.cfg
+
+init 6
+
+PRACTICA 3:
+Vamos a crear otra entrada con un RESCUE-CD
+El profe nos pasa un fichero "rescue.iso" y lo dejamos en /boot
+
+vim     /etc/grub.d/42_getafe
+añadimos esta entrada:
+
+menuentry "SystemRescue CD" {
+        loopback  loop (hd0,msdos1)/boot/rescue.iso
+        search --set=root -f 'sysrcd.dat'
+        chainloader $root/boot/grub/efi.img
+}
+
+grub2-mkconfig -o /boot/grub2/grub.cfg
+
+
+
+
+
+Arrancamos y nos da un ERROR!!!
+
+reiniciamos y ponemos:
+e    = editar
+
+
+Chapter 14.  Firewall
+Limit Network Comunication
+3-3-15
+Introduccion:
+En RedHat7, se ha optado por usar el MODULO NetFilter en vez de IPTABLES
+Analiza todos los paquetes que transitan por nuestro sistema ( las IP's source, destination, network, broadcast)
+No se puede desactivar
+Hay que establecer reglas de filtrado  (modificar cabeceras, etc
+La herramienta que usamos es:   iptables
+Ojo: existe un servicio que se llama IGUAL (el servvicio se basa en un fichero de configuraicon)
+EN RHEL6 el servicio era Iptables,pero en RHEL7 lo vamos a eliminar y activar firewalld
+
+IPTABLES
+Comando iptables. Sintaxis
+
+iptables    -I    Inserta regla al principio de una cadena
+        -A    Añade una regla al final de una cadena
+        -D    Delete una regla
+        -F    Limpia todas las reglas (Flush)
+Ej:
+iptables  -I   INPUT 3        Inserta una regla de entrar en la pos 3
+iptables  -A  FORWARD        Añade
+iptables  -D  OUTPUT 5        Borra la regla 5
+iptables  -F  FORWARD        Flush de todas las reglas de FORWARD
+
+
+NETFILTER
+Hay 3 acciones para cada paquete:
+Allow
+Deny
+Modify (la cabecera)
+
+Hay 5 cadenas pre-establecidas:
+INPUT
+OUTPUT
+FORWARD
+Pre-ROUTING
+Post-ROUTING
+
+Pre-ROUTING
+¿Como modifico un paquete?
+Alterando su cabecera
+DNAT: Destination NAT
+Ej: el router de casa: 
+Cuando accedemos a una web y recibimos respuesta, el router traduce la IP destino
+
+Chains
+tabla
+FILTER 
+(Allow / Deny)
+tabla
+NAT  
+(Modify)
+tabla
+mangle
+(modificar el cuerpo del paq)
+no se da en el curso
+INPUT
+X
+
+
+X
+OUTPUT
+X
+X
+X
+FORWARD
+X
+
+
+X
+PRE
+
+
+X
+X
+POST
+
+
+X
+X
+
+iptables : POR DEFECTO ATACA A LA TABLA FILTER
+
+Meter una TABLA de NAT:
+iptables  -t  <nat>  -I  POSTROUTING                -t = table 
+
+Politicas por defecto:
+iptables   -P    INPUT    { ACCEPT / DROP }            -P = Policy  (default=ACCEPT)
+
+Recordemos la cabecera de un paquete:
+SOURCE  IP
+SOURCE  PORT
+PROTOCOL
+DESTINATION IP
+DESTINATION PORT
+
+SOURCE  IP
+iptables        -t  filter  -I  INPUT  -s  172.25.2.254        - Paqs cuya IP source sea 172.25.2.254
+iptables        -t  filter  -I  INPUT  -s  172.25.0.0/16        - Paqs cuya IP source sea de la red 172.25.0.0
+
+SOURCE  PORT
+iptables        -t  filter  -I  INPUT  --sport  20            - Paqs cuyo source port=20
+iptables        -t  filter  -I  INPUT  --sport  1024:35540        - Paqs cuyo rangos de source port = 1024 hasta 35540
+
+PROTOCOL
+iptables        -t  filter  -I  INPUT  -p  tcp            - Paqs cuyo protocolo 
+iptables        -t  filter  -I  INPUT  -p  udp
+iptables        -t  filter  -I  INPUT  -p  icmp
+
+DESTINATION IP
+iptables        -t  filter  -I  INPUT  -d  172.25.2.254        - Paqs cuya IP destination  sea 172.25.2.254
+iptables        -t  filter  -I  INPUT  -d  172.25.2.0/16        - Paqs cuya IP destination  sea la red 172.25.2.0/16
+
+DESTINATION PORT
+iptables        -t  filter  -I  INPUT  --dport  20            - Paqs cuyo dest  port=20
+iptables        -t  filter  -I  INPUT  --dport  1024:35540        - Paqs cuyo rangos de dest port = 1024 hasta 35540
+
+
+Ejemplo de regla:
+iptables  -t  filter  -I  INPUT  3            -- en la tabla filter, Inserto una cadena  INPUT en la regla 3
+    -s  172.25.0.254                -- Son operaciones AND
+!    --sport  5265                -- Ojo la admiracion (!) es la NEGACION, que port <> 5265
+    -p  tcp
+    -d  172.25.1.254
+    --dport  80
+    -i  enio1                    -- Interface entrada = enio1    -i = cadenas Pre-ROUTING,FORWARD e INPUT
+    -o  enio1                -- Interface salida = enio1    -o = cadenas OUTPUT  y Post-ROUTING
+
+
+Saltos:
+Aqui le decimos a Netfilter QUE hacer con el paquete una vez que haya coincidencia:
+
+-j
+--jump
+
+ACCEPT    El paquete sigue su flujo normal
+DROP        Se rechaza el paquete y NO se envia respuesta icmp al cliente    (el cliente no se entera, es para ocultar)
+REJECT    Se rechaza el paquete y SI se envia respuesta icmp al cliente
+LOG        Se registra un evento en el LOG del sistema
+
+-Cuando una regla coincide se aplica y YA NO SE APLICAN MAS REGLAS ... SALVO que el --jump = LOG !!
+-Esto se usa mayormente para DEBUG... se pone el LOG en la regla anterior para ver qué hace
+
+Ejemplo:
+
+iptables  -t  filter  -I  INPUT    -s  172.25.1.254  -j  REJECT
+iptables  -t  filter  -I  INPUT    -s  172.25.1.0/16  -j  ACCEPT
+
+Ojo: si tecleamos los 2 comandos anteriores la primera regla no va a hacer caso.
+
+
+¿COMO SABEMOS LA REGLAS CARGADAS?
+
+[root@server4 ~]# iptables -L
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+ACCEPT     all  --  anywhere             anywhere             state RELATED,ESTABLISHED
+ACCEPT     icmp --  anywhere             anywhere            
+ACCEPT     all  --  anywhere             anywhere            
+ACCEPT     tcp  --  anywhere             anywhere             state NEW tcp dpt:ssh
+REJECT     all  --  anywhere             anywhere             reject-with icmp-host-prohibited
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination         
+REJECT     all  --  anywhere             anywhere             reject-with icmp-host-prohibited
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+[root@server4 ~]# iptables -nL            numeric
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+ACCEPT     icmp --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     tcp  --  0.0.0.0/0            0.0.0.0/0            state NEW tcp dpt:22
+REJECT     all  --  0.0.0.0/0            0.0.0.0/0            reject-with icmp-host-prohibited
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination         
+REJECT     all  --  0.0.0.0/0            0.0.0.0/0            reject-with icmp-host-prohibited
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination        
+
+[root@server4 ~]# iptables -nvL            v =  verbose, muestra estadisticas
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+  153 10960 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+    0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0           
+    0     0 ACCEPT     all  --  lo     *       0.0.0.0/0            0.0.0.0/0           
+    0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            state NEW tcp dpt:22
+    7  1141 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-host-prohibited
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+    0     0 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-host-prohibited
+
+Chain OUTPUT (policy ACCEPT 82 packets, 11260 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+
+
+[root@server4 ~]# iptables -nvL --line-numbers    --pone los Nªs de regla
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)        policy default = ACCEPT
+num   pkts bytes target     prot opt in     out     source               destination         
+1      199 14184 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+2        0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0           
+3        0     0 ACCEPT     all  --  lo     *       0.0.0.0/0            0.0.0.0/0           
+4        0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            state NEW tcp dpt:22
+                                            por aqui pasa cuando hacemos SSH
+5        8  1304 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-host-prohibited
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+num   pkts bytes target     prot opt in     out     source               destination         
+1        0     0 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-host-prohibited
+
+Chain OUTPUT (policy ACCEPT 108 packets, 14600 bytes)
+num   pkts bytes target     prot opt in     out     source               destination         
+[root@server4 ~]#
+
+[root@server4 ~]#  iptables -P INPUT DROP        Cambiamos la policy default para la chain INPUT
+
+[root@server4 ~]# iptables -F                Borro todas las rules !!
+[root@server4 ~]# iptables -nL
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination
+
+
+Reglas tipicas que se suelen poner::
+
+1) Todas las conexiones ya establecidas dejar entrar los paquetes:
+[root@server4 ~]# iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+                    -m = mark
+                    Si el paquete que entra tiene estado RELATED, ESTABLISHED ==> ACCEPT (dejalo pasar)
+
+2) Aceptar todos los PINGS
+[root@server4 ~]# iptables -A INPUT -p icmp -j ACCEPT
+                    -p = protocol
+
+3) Todo los que venga por la interfaz loopback : ACCEPT
+[root@server4 ~]# iptables -A INPUT -i lo -j ACCEPT
+                    -i = interface
+
+4) Aceptar nuevas conexiones SSH
+[root@server4 ~]# iptables -A INPUT -m state --state NEW -p tcp --dport 22 -j ACCEPT
+
+5) Todos los demas paquetes: REJECT  (informando del REJECT)
+[root@server4 ~]# iptables -A INPUT -j REJECT
+
+Veo todas las reglas:
+[root@server4 ~]# iptables -nL
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+ACCEPT     icmp --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           
+ACCEPT     tcp  --  0.0.0.0/0            0.0.0.0/0            state NEW tcp dpt:22
+REJECT     all  --  0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination
+
+
+- TODO ESTO ES PARA IPv4 
+
+[root@server4 ~]# iptables-save        Lee de RAM las reglas y muestra por pantalla
+# Generated by iptables-save v1.4.21 on Tue Mar  3 10:50:59 2015
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [35:3844]
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
+-A INPUT -j REJECT --reject-with icmp-port-unreachable
+COMMIT
+# Completed on Tue Mar  3 10:50:59 2015
+
+[root@server4 ~]# iptables-save > /etc/sysconfig/iptables        Guarda en un fichero de configuracion
+[root@server4 ~]# systemctl restart iptables.service
+
+tabla  NAT.    
+Network Address Traslation
+
+-j  DNAT            Modificamos la Destination IP
+    --to    ip:port
+    
+[root@server4 ~]# iptables -t nat  -I PREROUTING -p tcp --dport 80 -j DNAT --to=172.25.254.254
+[root@server4 ~]# iptables -t nat  -I POSTROUTING -j MASQUERADE    
+"los paquetes que hagan NAT siguelos"
+
+[root@server4 ~]# cat /proc/sys/net/ipv4/ip_forward        -Este fichero le dice al kernel que-NO haga fordwarding
+0                                    
+
+[root@server4 ~]# echo 1 >  /proc/sys/net/ipv4/ip_forward    -Ahora si hace FORWARDING
+[root@server4 ~]# cat /proc/sys/net/ipv4/ip_forward
+1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+firewalld
+Es lo que se usa en RH7 , sustituyendo al comando iptables
+Se pueden poner cadenas supletorias
+Permite una gestion de rules basadas en ZONAS
+Es un paquete que viene con varios servicios
+Un servicio del FW es un fichero de configuracion que tiene un nombre
+
+Firewall Services Pre-defines:
+ssh
+dhcp6-client
+ipp-client
+samba-client
+mdns
+
+Zonas Pre-definidas
+
+-NM, basandose en las reglas que tenga activas puede decidir que estamos en una zona concreta
+
+
+trusted
+    TODO está permitido (trafico entrante)
+home
+    Se rechaza todos los servicios excepto:
+    ssh
+    mdns
+    ipp-client
+    samba-client
+    dhcp5
+    
+internal
+    Se rechaza todos los servicios excepto: (igual que home)
+    ssh
+    mdns
+    ipp-client
+    samba-client
+    dhcp6-client
+work
+    Se rechaza todos los servicios excepto:
+    ssh
+    ipp-client
+    dhcp6-client
+public
+    Se rechaza todos los servicios excepto:
+    ssh
+    dhcp6-client
+
+external
+    Se rechaza todos los servicios excepto:
+    ssh
+        IPv4 is masquerade
+dmz
+    Se rechaza todos los servicios excepto:
+    ssh
+block
+    Se rechaza todo excepto si es de salida y SI  muestra mensaje
+drop 
+    Se rechaza todo y NO muestra mensaje (icmp)
+
+
+Configure Firewall Settings
+
+firewall-cmd
+
+firewall-cmd   --get-services        Servicios PRE-CONFIGURADOS
+amanda-client bacula bacula-client dhcp dhcpv6 dhcpv6-client dns ftp high-availability http https imaps ipp ipp-client ipsec kerberos kpasswd ldap ldaps libvirt libvirt-tls mdns mountd ms-wbt mysql nfs ntp openvpn pmcd pmproxy pmwebapi pmwebapis pop3s postgresql proxy-dhcp radius rpc-bind samba samba-client smtp ssh telnet tftp tftp-client transmission-client vnc-server wbem-https
+
+Estos services estan en:
+[root@server4 ~]# ll /usr/lib/firewalld/services/
+total 188
+-rw-r-----. 1 root root 412 Feb 28  2014 amanda-client.xml
+-rw-r-----. 1 root root 320 Feb 28  2014 bacula-client.xml
+-rw-r-----. 1 root root 346 Feb 28  2014 bacula.xml
+-rw-r-----. 1 root root 305 Feb 28  2014 dhcpv6-client.xml
+-rw-r-----. 1 root root 234 Feb 28  2014 dhcpv6.xml
+-rw-r-----. 1 root root 227 Feb 28  2014 dhcp.xml
+-rw-r-----. 1 root root 346 Feb 28  2014 dns.xml
+-rw-r-----. 1 root root 374 Feb 28  2014 ftp.xml
+
+[root@server4 services]# more ssh.xml
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>SSH</short>
+  <description>Secure Shell (SSH) is a protocol for logging into and executing commands on remote machines. It provides secure encrypted
+ communications. If you plan on accessing your machine remotely via SSH over a firewalled interface, enable this option. You need the op
+enssh-server package installed for this option to be useful.</description>
+  <port protocol="tcp" port="22"/>
+</service>
+
+¿DONDE ESTA CONFIGURADO?
+ls /etc/firewalld/
+firewalld.conf  icmptypes  lockdown-whitelist.xml  services  zones
+
+firewall-config        --> Forma grafica
+
+
+
+
+
+
+
+
+
+Podemos cambiar la default-zone:
+
+
+
+OJO:
+Si cambiamos la zona por defecto (por ejemplo a BLOCK), no dejará hacer conexiones por SSH
+
+Habra que ahcer por consola:
+firewall-cmd  --get-default-zone
+block
+
+firewall-cmd  --set-default-zone=public    -- Ya podemos acceder
+success
+
+firewall-cmd  --get-default-zone
+public
+
+
+IP
+
+Cada vez que venga una peticion con esta IP, se asociará a la zona public:
+firewall-cmd --add-source=172.25.4.10 --zone=public
+success
+
+firewall-cmd --remove-source=172.25.4.10 --zone=public
+success
+
+INTERFACES
+
+Asociar un interface a la zona trusted:
+[root@server4 ~]# firewall-cmd --remove-interface=eth0
+success
+[root@server4 ~]# firewall-cmd --add-interface=eth0 --zone=trusted
+success
+
+Ahora la cambio de zona a la interface:
+[root@server4 ~]# firewall-cmd --change-interface=eth0 --zone=public
+success
+
+[root@server4 ~]# firewall-cmd --list-all
+public (default, active)
+  interfaces: eth0
+  sources:
+  services: dhcpv6-client ssh
+  ports:
+  masquerade: no
+  forward-ports:
+  icmp-blocks:
+  rich rules:
+
+Para ver como estan TODAS LAS ZONAS:
+[root@server4 ~]# firewall-cmd --list-all-zones
+ROL
+  interfaces:
+  sources: 172.25.0.252/32
+  services: ssh vnc-server
+  ports:
+  masquerade: no
+  forward-ports:
+  icmp-blocks:
+  rich rules:
+    
+block
+  interfaces:
+  sources:
+  services:
+  ports:
+  masquerade: no
+  forward-ports:
+  icmp-blocks:
+  rich rules:
+    
+dmz
+  interfaces:
+  sources:
+  services: ssh
+  ports:
+  masquerade: no
+  forward-ports:
+  icmp-blocks:
+  rich rules:
+    
+drop
+  interfaces:
+  sources:
+  services:
+  ports:
+  masquerade: no
+  forward-ports:
+  icmp-blocks:
+  rich rules:
+    
+external
+  interfaces:
+  sources:
+  services: ssh
+  ports:
+  masquerade: yes
+  forward-ports:
+  icmp-blocks:
+  rich rules:
+    
+home
+  interfaces:
+  sources:
+  services: dhcpv6-client ipp-client mdns samba-client ssh
+  ports:
+  masquerade: no
+  forward-ports:
+  icmp-blocks:
+  rich rules:
+    
+internal
+  interfaces:
+  sources:
+  services: dhcpv6-client ipp-client mdns samba-client ssh
+  ports:
+  masquerade: no
+  forward-ports:
+  icmp-blocks:
+  rich rules:
+    
+public (default, active)
+  interfaces: eth0
+  sources:
+  services: dhcpv6-client ssh
+  ports:
+  masquerade: no
+  forward-ports:
+  icmp-blocks:
+  rich rules:
+    
+trusted
+  interfaces:
+  sources:
+  services:
+  ports:
+  masquerade: no
+  forward-ports:
+  icmp-blocks:
+  rich rules:
+    
+work
+  interfaces:
+  sources:
+  services: dhcpv6-client ipp-client ssh
+  ports:
+  masquerade: no
+  forward-ports:
+  icmp-blocks:
+  rich rules:
+    
+Vamos a añadir un SERVICIO a una ZONA:
+[root@server4 ~]#   firewall-cmd    --add-service=http
+success
+[root@server4 ~]# firewall-cmd --list-all
+public (default, active)
+  interfaces: eth0
+  sources:
+  services: dhcpv6-client http ssh
+  ports:
+  masquerade: no
+  forward-ports:
+  icmp-blocks:
+  rich rules:
+
+OJO: ESTAMOS EN RUNTIME AUN !!!!
+
+¿COMO HACEMOS QUE SEA PERMANENTE?
+[root@server4 ~]#   firewall-cmd --add-service=http --permanent    -- Guarda en los ficheros de configuracion
+success
+
+[root@server4 ~]#   firewall-cmd --reload            -- Lee de los ficheros de configuracion
+success
+
+
+Vamos a añadir un PUERTO a una ZONA:
+[root@server4 ~]#  firewall-cmd --add-port=888/tcp        -- Puesto destino 
+success
+
+[root@server4 ~]#   firewall-cmd --remove-port=888/tcp
+succes
+
+
+ZONAS
+
+/lib/firewalld/zones
+
+[root@server4 zones]# ll
+total 36
+-rw-r-----. 1 root root 299 Feb 28  2014 block.xml
+-rw-r-----. 1 root root 293 Feb 28  2014 dmz.xml
+-rw-r-----. 1 root root 291 Feb 28  2014 drop.xml
+-rw-r-----. 1 root root 304 Feb 28  2014 external.xml
+-rw-r-----. 1 root root 400 Feb 28  2014 home.xml
+-rw-r-----. 1 root root 415 Feb 28  2014 internal.xml
+-rw-r-----. 1 root root 315 Feb 28  2014 public.xml
+-rw-r-----. 1 root root 162 Feb 28  2014 trusted.xml
+-rw-r-----. 1 root root 342 Feb 28  2014 work.xml
+
+
+[root@server4 zones]# more public.xml
+<?xml version="1.0" encoding="utf-8"?>
+<zone>
+  <short>Public</short>
+  <description>For use in public areas. You do not trust the other computers on networks to not harm your computer. Only selected incomi
+ng connections are accepted.</description>
+  <service name="ssh"/>
+  <service name="dhcpv6-client"/>
+</zone>
+
+cd /etc/firewalld/zones                -- Aqui estan las zonas custom
+[root@server4 zones]# ll
+total 16
+-rw-r--r--. 1 root root 280 Mar  3 13:34 getafe.xml
+-rw-r--r--. 1 root root 352 Mar  3 13:19 public.xml
+-rw-r--r--. 1 root root 315 Mar  3 13:18 public.xml.old
+-rw-r--r--. 1 root root 255 Jul 11  2014 ROL.xml
+
+Nos creamos una nueva:
+vim getafe.xml
+<?xml version="1.0" encoding="utf-8"?>
+<zone>
+  <short>Getafe</short>
+  <description>Zona de pruebas de Getafe.</description>
+  <service name="dhcpv6-client"/>
+  <service name="ssh"/>
+  <service name="http"/>
+  <service name="https"/>
+  <port protocol="tcp" port="8080"/>
+</zone>
+
+firewall-cmd --reload
+
+firewall-cmd --list-all-zones
+getafe
+  interfaces:
+  sources:
+  services: dhcpv6-client http https ssh
+  ports: 8080/tcp
+  masquerade: no
+  forward-ports:
+  icmp-blocks:
+  rich rules:
+
+¿COMO CREAMOS UN SERVICIO?
+
+cd   /etc/firewalld/services        (podemos hacerlo en /usr... pero mejor aqui)
+vim  jboss.xml
+<?xml version="1.0" encoding="utf-8"?>
+<service version="1.0">
+        <short>JBoss</short>
+        <description>JBoss multiple port services</description>
+        <port port="8080" protocol="tcp"/>
+        <port port="443" protocol="tcp"/>
+        <port port="8009" protocol="tcp"/>
+        <port port="447" protocol="tcp"/>
+        <port port="9990" protocol="tcp"/>
+        <port port="9999" protocol="tcp"/>
+</service>
+
+[root@server4 services]# firewall-cmd --reload            -- Lee los ficheros de configuracion
+success
+[root@server4 services]# firewall-cmd --add-service=jboss    -- Añado el service al firewall
+success
+
+
+
