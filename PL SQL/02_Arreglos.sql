@@ -23,6 +23,6 @@ notas := notasArray(90,60,78,98,66);
     
     notas(1) := 95;
         DBMS_OUTPUT.PUT_LINE( notas(1));
-
+ DBMS_OUTPUT.PUT_LINE( 'FIN');
 END;
 /
