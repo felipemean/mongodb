@@ -7,6 +7,7 @@ DECLARE
   nombre1 nvarchar2(100):= 'Fernando';
     nombre2 nvarchar2(100);
 BEGIN
+-- Comienzo operador logico if , elsif , end if;
   if (A=B) THEN
   dbms_output.put_line('A es igual que B');
   elsif (A<B) then
@@ -15,12 +16,13 @@ BEGIN
     dbms_output.put_line('A es mayor que B'); 
   END IF;
   
+  -- Comienzo operador logico if , elsif , end if;  CON like
   if (nombre1 like 'Fer%' ) then 
-    dbms_output.put_line('El nombre contiene  Fer');
+    dbms_output.put_line('El nombre contiene  "Fer"');
   end if;
   
   if (nombre1 like '%nan%' ) then 
-    dbms_output.put_line('El nombre contiene  la cadena de caracteres nam');
+    dbms_output.put_line('El nombre contiene  la cadena de caracteres "nam"  ');
   end if;
   if (nombre1 like '%do' ) then 
     dbms_output.put_line('El nombre termina en do');

@@ -14,12 +14,12 @@ notas := notasArray(90,60,78,98,66);
 
 
   DBMS_OUTPUT.PUT_LINE( alumnos(1));
+   DBMS_OUTPUT.PUT_LINE( ' Su nota es '|| notas(1));
    DBMS_OUTPUT.PUT_LINE( alumnos(2));
+    DBMS_OUTPUT.PUT_LINE( ' Su nota es '|| notas(2));
     DBMS_OUTPUT.PUT_LINE( alumnos(3));
-    
-    DBMS_OUTPUT.PUT_LINE( notas(1));
-    DBMS_OUTPUT.PUT_LINE( notas(2));
-    DBMS_OUTPUT.PUT_LINE( notas(3));
+
+    DBMS_OUTPUT.PUT_LINE( ' Su nota es '|| notas(3));
     
     notas(1) := 95;
         DBMS_OUTPUT.PUT_LINE( notas(1));

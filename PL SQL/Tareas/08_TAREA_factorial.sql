@@ -1,6 +1,6 @@
 set serveroutput on;
 DECLARE
- numero number := 3 ; --5*4*3*2*1
+ numero number := 7 ; --5*4*3*2*1
  factorial number ;
  
 BEGIN
