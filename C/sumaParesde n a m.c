@@ -2,21 +2,20 @@
 #include<stdio.h>
 
 int main(){
-	int n, cont, suma=0, sumapar=0, sumaimpar=0, ne;
-	cont=1;
+	int n,m,n1,n2 ,i,sumapar=0;
+	i=1;
+	printf("Suma de pares desde n hasta m");
+	printf("\n\tDigite dos  numeros n y m:\n"); scanf("%i %i", &n1, &n2);
+	n=n1;
+	m=n2;
+	i =n1;
 	
-	printf("\n\tDigite un numero:\n"); scanf("%i", &n);
-	
-	while(cont<=n){
-		if(cont%2 == 0){
-		 ne=cont *(-1);
-		 sumapar += ne;;
-		}else{
-			sumaimpar +=cont;
+	while(i<=m){
+		if(i%2 == 0){
+			 sumapar += i;
 		}
-		suma= sumaimpar + sumapar;
-		cont++;
+		i++;
 	}
-	printf("\n REsultado de la suma 1-2+3-4.....    es \n\t\t%i:", suma); 
+	printf("\n El resultado de sumar los pares desde %i hasta %i  es \n\t\t%i:", n,m,sumapar); 
 	return 0;
 }
