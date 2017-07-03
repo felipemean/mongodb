@@ -7,13 +7,13 @@ imprimir dicha cadena al reves.*/
 
 int main(){
 	char palabra[30];
-	int i=0;
+	int i=0,j=0,k=0;
 	
 	printf("Digite una palabra: ");
 	gets(palabra);
 	
 	while(palabra[i] != '\0'){
-		i++;
+		i++; k++;
 	}
 	
 	printf("\n La palabra tiene: %i letras",i);
@@ -21,6 +21,12 @@ int main(){
 	printf("\n La palabra escrita al reves es: ");
 	while(i>=0){
 		printf("%c",palabra[i--]);
+	
+	}
+	printf("\n La palabra escrita Normal es: ");
+	while(j<=k){
+	
+		printf("%c",palabra[j++]);
 	}
 	
 	
