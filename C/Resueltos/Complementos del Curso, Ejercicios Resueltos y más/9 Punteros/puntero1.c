@@ -7,9 +7,10 @@
 #include<stdio.h>
 
 int main(){
-	int numero = 40 ;
+	int numero = 70 ;
 	
-	printf("%i", numero);
+	printf("%i", numero);		// dato
+	printf("\n%p", &numero);  // Posicion en memoria
 	
 	return 0;
 }

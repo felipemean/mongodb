@@ -31,7 +31,7 @@ int main(){
 	}
 	
 	for(i=0;i<2;i++){
-				printf("\n\n Datos del empleado nº %i", i+1);
+				printf("\n\n Datos del empleado numero %i", i+1);
 				printf("\n Nombre:	%s", empleados[i].nombre);
 				printf("\n Direccion:	%s", empleados[i].dir_empleado.direccion);
 					printf("\n Provincia:	%s", empleados[i].dir_empleado.provincia);
