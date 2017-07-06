@@ -10,7 +10,6 @@ int main(){
 	*a =5.45;
 	
 	printf("\n%.2f", *a);
-	printf("\n Tamaño: %i", a);
-	
+
 	return 0;
 }
