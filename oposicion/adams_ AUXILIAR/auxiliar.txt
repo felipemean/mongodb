@@ -1,0 +1,39 @@
+﻿Bloque I.- ORGANIZACIÓN DEL ESTADO Y ADMINISTRACIÓN ELECTRÓNICA
+1.	La Constitución Española de 1978. Derechos y deberes fundamentales. Su garantía y suspensión. La Jefatura del Estado. La Corona. Funciones constitucionales del Rey.
+2.	Las Cortes Generales. Atribuciones del Congreso de los Diputados y del Senado. El Tribunal Constitucional. Composición y atribuciones. El Defensor del Pueblo.
+3.	El Gobierno. Su composición. Nombramiento y cese. Las funciones del Gobierno. Relaciones entre el Gobierno y las Cortes Generales. La Ley 19/2013, de 9 de diciembre, de transparencia, acceso a la información pública y buen gobierno. El Consejo de Transparencia y Buen Gobierno: funciones.
+4.	La Administración Pública: Principios constitucionales informadores. La Administración General del Estado: organización y personal a su servicio. Las Comunidades Autónomas y la Administración Local: regulación constitucional.
+5.	Las fuentes del Derecho Administrativo. La jerarquía de las fuentes. La Ley. Las Disposiciones del Ejecutivo con fuerza de Ley: Decreto-Ley y Decreto Legislativo. El Reglamento: concepto, clases y límites. Otras fuentes del Derecho Administrativo.
+6.	Políticas de Igualdad de Género. La Ley Orgánica 3/2007, de 22 de marzo, para la Igualdad efectiva de mujeres y hombres. Políticas contra la Violencia de género. La Ley Orgánica 1/2004, de 28 de diciembre, de Medidas de Protección Integral contra la Violencia de Género. Discapacidad y dependencia.
+7.	La sociedad de la información. Legislación sobre sociedad de la información y firma electrónica. El DNI electrónico.
+8.	La protección de datos personales. La Ley Orgánica 15/1999 de Protección de Datos de Carácter Personal y Normativa en Desarrollo. La Agencia de Protección de Datos: competencias y funciones.
+9.	Acceso electrónico de los ciudadanos a los servicios públicos y normativa de desarrollo. La gestión electrónica de los procedimientos administrativos: registros, notificaciones y uso de medios electrónicos. Esquema Nacional de Seguridad y de Interoperabilidad. Normas técnicas de Interoperabilidad.
+10.	Instrumentos para el acceso electrónico a las Administraciones Públicas: sedes electrónicas, canales y puntos de acceso, identificación y autenticación.
+BLOQUE II:       TECNOLOGÍA BÁSICA
+1.	Informática básica. Conceptos de datos e información. Concepto de sistema de información. Elementos constitutivos de un sistema de información. Características y funciones. Arquitectura de ordenadores. Elementos básicos. Funciones. La unidad central de proceso. La memoria: tipos, jerarquía y modos de direccionamiento.
+2.	Periféricos: conectividad y administración. Elementos de impresión. Elementos de almacenamiento. Elementos de visualización y digitalización.
+3.	Tipos abstractos y Estructuras de datos. Organizaciones de ficheros. Algoritmos. Formatos de información y ficheros.
+4.	Sistemas operativos. Características y elementos constitutivos. Sistemas Windows. Sistemas Unix y Linux. Sistemas operativos para dispositivos móviles.
+5.	Sistemas de gestión de bases de datos relacionales. Características y componentes. Sistemas de gestión de bases de datos orientados a objetos.
+BLOQUE II I : 	DESARROLLO DE SISTEMAS
+1.	Modelo conceptual de datos. Entidades, atributos y relaciones. Reglas de modelización. Diagramas de flujo de datos. Reglas de construcción. Descomposición en niveles. Flujogramas.
+2.	Diseño de bases de datos. Diseño lógico y físico. El modelo lógico relacional. Normalización.
+3.	Lenguajes de programación. Representación de tipos de datos. Operadores. Instrucciones condicionales. Bucles y recursividad. Procedimientos, funciones y parámetros. Vectores y registros. Estructura de un programa.
+4.	Lenguajes de interrogación de bases de datos. Estándar ANSI SQL.
+5.	Diseño y programación orientada a objetos. Elementos y componentes software: objetos, clases, herencia, métodos, sobrecarga. Ventajas e inconvenientes. Patrones de diseño y lenguaje de modelado unificado (UML).
+6.	Lenguajes de programación. Características, elementos y funciones en entornos Java, C, y C++ y. Net.
+7.	Arquitectura cliente/servidor. Modelo de 2 capas. Modelo de 3 capas. Componentes y operación. Arquitecturas de servicios web (WS).
+8.	Aplicaciones Web. Tecnologías de programación. JavaScript, applets, servlets, y servicios web. Lenguajes de descripción de datos: HTML, XML y sus derivaciones. Navegadores y lenguajes de programación web. Lenguajes de script.
+9.	Accesibilidad, diseño universal y usabilidad. Acceso y usabilidad de las tecnologías, productos y servicios relacionados con la sociedad de la información. Confidencialidad y disponibilidad de la información en puestos de usuario final.
+10.	Herramientas CASE: características. Repositorios: estructura y actualización. Generación de código y documentación. Programas para control de versiones.
+BLOQUE IV : 	SISTEMAS Y COMUNICACIONES
+1.	Administración del Sistema operativo y software de base. Funciones y responsabilidades. Control de cambios de los programas de una instalación.
+2.	Administración de bases de datos. Funciones y responsabilidades. Administración de servidores de correo electrónico. Protocolos de correo electrónico.
+3.	Administración de redes de área local. Gestión de usuarios. Gestión de dispositivos. Monitorización y control de tráfico.
+4.	Conceptos de seguridad de los sistemas de información. Seguridad física. Seguridad lógica. Amenazas y vulnerabilidades. Infraestructura física de un CPD: acondicionamiento y equipamiento. Sistemas de gestión de incidencias. Control remoto de puestos de usuario.
+5.	Comunicaciones. Medios de transmisión. Modos de comunicación. Equipos terminales y equipos de interconexión y conmutación.
+6.	Redes de Comunicaciones. Redes de Conmutación y Redes de Difusión. Comunicaciones móviles y redes inalámbricas.
+7.	El modelo de referencia de interconexión de sistemas abiertos (OSI) de ISO. Protocolos TCP/IP.
+8.	Internet: arquitectura de red. Origen, evolución y estado actual. Servicios: correo electrónico, WWW, FTP, Telnet y otros. Protocolos HTTP, HTTPS y SSL/TLS.
+9.	Seguridad y protección en redes de comunicaciones. Sistemas de cortafuegos. Redes Privadas Virtuales (VPN). Seguridad en el puesto del usuario.
+10.	Redes locales. Tipología. Métodos de acceso. Dispositivos de interconexión.

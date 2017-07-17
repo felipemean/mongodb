@@ -1,0 +1,123 @@
+﻿precio (papel): 146.15 € + IVA
+Se compone de las siguientes materias:
+
+Organización del Estado y Administración Electrónica
+Tecnología básica
+Desarrollo de Sistemas
+Sistemas y Comunicaciones
+
+Bloque I. Organización del Estado y Administracion Electrónica
+
+	1. La Constitución española de 1978. Derechos y deberes fundamentales. Su garantía y suspensión. La Jefatura del Estado. La Corona. Funciones constitucionales del Rey.
+	2. Las Cortes Generales. Atribuciones del Congreso de los Diputados y del Senado. El Tribunal Constitucional. Composición y atribuciones. El Defensor del Pueblo.
+	3. El Gobierno. Su composición. Nombramiento y cese. Las funciones del Gobierno. Relaciones entre el Gobierno y las Cortes Generales.
+	4. La Administración Pública: principios constitucionales informadores. La Administración General del Estado: organización y personal a su servicio. Las Comunidades Autónomas y la Administración Local: regulación constitucional.
+	5. Las fuentes del Derecho Administrativo. La jerarquía de las fuentes. La Ley. Las Disposiciones del Gobierno con fuerza de Ley: Decreto-ley y Decreto Legislativo. El Reglamento: concepto, clases y límites. Otras fuentes del Derecho Administrativo.
+	6. Políticas de Igualdad de Género. La Ley Orgánica 3/2007, de 22 de marzo, para la Igualdad efectiva de mujeres y hombres. Políticas contra la Violencia de género. La Ley Orgánica 1/2004, de 28 de diciembre, de Medidas de Protección Integral contra la Violencia de Género. Discapacidad y dependencia.
+	
+	7. La sociedad de la información. Legislación sobre sociedad de la información y firma electrónica. El DNI electrónico.
+	8. La protección de datos personales y su normativa reguladora. Las Agencias de Protección de Datos: competencias y funciones.
+	9. La Ley 11/2007, de acceso electrónico de los ciudadanos a los servicios públicos y normativa de desarrollo. 
+		La gestión electrónica de los procedimientos administrativos: registros, notificaciones y uso de medios electrónicos. 
+		Esquema Nacional de Seguridad. Esquema Nacional de Interoperabilidad. Normas técnicas de interoperabilidad.
+	10. Instrumentos para el acceso electrónico a las Administraciones Públicas: sedes electrónicas, canales y punto de acceso, identificación y autenticación.
+	11. Instrumentos para la cooperación entre Administraciones Públicas en materia de Administración Electrónica. 
+		Órganos. Infraestructuras y servicios comunes. Plataformas de validación e interconexión de redes.
+	
+
+
+Bloque II. Tecnología Básica
+
+	
+1. Tecnologías actuales de ordenadores: de los dispositivos móviles a los superordenadores y arquitecturas escalables (grid, cluster, MPP, SMP, arquitecturas multinúcleo y otros). Base tecnológica. Componentes, funcionalidades y capacidades.
+2. Conceptos de sistemas operativos. Estructuras, componentes y funciones. Características y evolución. Administración de memoria. Procesos y subprocesos. Entrada/salida. Sistemas de archivo. Sistemas operativos multiprocesador.
+3. Características técnicas y funcionales de los sistemas operativos: Windows, Linux, Unix y otros. Sistemas operativos para dispositivos móviles
+4. Lenguajes actuales de programación. Características técnicas.
+5. Concepto y componentes de un entorno de bases de datos. Utilización de bases de datos en la Organización: sistemas OLTP, MIS, DSS, y almacenes de datos.
+6. Sistemas de gestión de bases de datos relacionales. Antecedentes históricos. Características y elementos constitutivos. El lenguaje SQL. Estándares de conectividad: ODBC y JDBC.
+7. Arquitecturas cliente-servidor. Tipología. Componentes. Interoperabilidad de componentes. Ventajas e inconvenientes. Arquitectura de servicios web (WS).
+8. El modelo TCP/IP: Arquitectura, capas, interfaces, protocolos, direccionamiento y encaminamiento.
+9. Lenguajes de marca o etiqueta. Características y funcionalidades. SGML, HTML, XML y sus derivaciones. Lenguajes de script.
+10. Plan de seguridad. Plan de contingencias. Plan de recuperación. Políticas de salvaguarda. El método MAGERIT de gestión de la seguridad.
+11. Auditoría Informática. Objetivos, alcance y metodología. Técnicas y herramientas. Normas y estándares.
+12. Gestión de la atención a clientes y usuarios: centros de contacto, CRM. Arquitectura multicanal. Sistemas de respuesta interactiva (IVR). Voice XML.
+13. Seguridad física y lógica de un sistema de información. Riesgos, amenazas y vulnerabilidades. Medidas de protección y aseguramiento. Auditoría de seguridad física.
+14. Software libre y software propietario. Características y tipos de licencias. La protección jurídica de los programas de ordenador. Tecnologías de protección de derechos digitales.
+15. Técnicas de evaluación de alternativas y análisis de viabilidad. Personal, procedimientos, datos, software y hardware. Presupuestación y control de costes de un proyecto informático.
+16. Documática. Gestión y archivo electrónico de documentos. Sistemas de gestión documental. Gestores de contenidos. Sindicación de contenido. Sistemas de gestión de flujos de trabajos. Búsqueda de información: robots, spiders, otros.
+
+
+
+
+Bloque III. Desarrollo de Sistemas
+
+	1. Concepto del ciclo de vida de los sistemas y fases. Modelo en cascada, y modelo en espiral del ciclo de vida. Otros modelos.
+	2. Gestión del proceso de desarrollo. Objetivos del desarrollo. Actividades de gestión. Desarrollo en fases.
+		Tareas y funciones de los distintos agentes.
+	3. Planificación del desarrollo. Técnicas de planificación. Metodologías de desarrollo: la metodología Métrica.
+	4. Estrategias de determinación de requerimientos: Entrevistas, Derivación de sistemas existentes, Análisis y Prototipos.
+	
+	5. Diagramas de flujo de datos: Diagramas estructurados. Flujogramas de sistema. Flujogramas de Programa.
+	6. Modelización conceptual. Elementos: entidades, atributos, relaciones, identificadores, roles. Reglas de modelización. Validación y construcción de modelos de datos.
+	
+	7. Diseño de bases de datos. La arquitectura ANSI/SPARC. El modelo lógico relacional. Normalización. Diseño lógico.
+		Diseño físico. Problemas de concurrencia de acceso: lectura sucia, lectura fantasma y bloqueo. Mecanismos de resolución de conflictos.
+	8. Estructuras de datos. Tablas, listas y árboles. Algoritmos: ordenación, búsqueda. Grafos. Organizaciones de ficheros.
+	9. Diseño de programas. Diagramas estructurados. Análisis de transformación y de transacción. Cohesión y acoplamiento.
+	10. Construcción del sistema. Preparación de la instalación. Estándares de documentación.
+		Manuales de usuario y manuales técnicos. Formación de usuarios y personal técnico: métodos y materiales.
+	11. Pruebas. Planificación y documentación. Pruebas de caja negra. Pruebas de caja blanca. 
+		Utilización de datos de prueba. Pruebas de software, hardware, procedimientos y datos.
+	12. Instalación y cambio. Estrategias de sustitución. Recepción e instalación. Evaluación post-implementación Mantenimiento.
+	
+	13. Análisis y diseño orientado a objetos. Concepto. Elementos. El proceso unificado de software. 
+		El lenguaje de modelado unificado (UML).
+	14. La arquitectura J2EE. Características de funcionamiento. Elementos constitutivos. Productos y herramientas.
+	15. La plataforma. Net. Modelo de programación. Servicios. Herramientas. La Tecnología ADO.NET.
+	
+	16. Aplicaciones Web.Tecnologías de programación: JavaScript, applets, servlets, ASP, JSP y PHP. Servicios Web: SOAP, WSDL y UDDI.
+	17. La calidad del software y su medida. Modelos, métricas, normas y estándares.
+	
+	18. Accesibilidad y usabilidad de las tecnologías, productos y servicios relacionados con la sociedad de la información.
+	19. Minería de datos. Aplicación a la resolución de problemas de gestión. Tecnología y algoritmos. Procesamiento analítico en línea (OLAP).
+
+
+
+Bloque IV. Sistemas y Comunicaciones
+
+	1. Administración del Sistema operativo y software de base. 
+		Funciones y responsabilidades. Control de cambios.
+	2. Administración de Sistemas de Gestión de Bases de Datos. 
+		Funciones. Responsabilidades. Administración de datos.
+	3. Prácticas de mantenimiento de equipos e instalaciones.
+		Mantenimiento preventivo, correctivo y perfectivo. 
+		Monitorización y gestión de capacidad.
+	4. Gestión de librerías de programas. Gestión de medios magnéticos. Controles de cambios. 
+		Los lenguajes de control de trabajos. Las técnicas y herramientas de operación automática.
+	5. Control de la ejecución de los trabajos. Evaluación del rendimiento. 
+		Planificación de la capacidad. Análisis de la carga. Herramientas y técnicas utilizables.
+	6. Almacenamiento masivo de datos. Sistemas SAN, NAS y DAS: componentes, protocolos, gestión y administración.
+		Virtualización del almacenamiento. Gestión de volúmenes.
+	7. Medios de transmisión. Cables metálicos. Cable coaxial. Fibra óptica. 
+		Tipología de redes de cable. Medios inalámbricos. Sistemas de transmisión por satélite.
+	8. Redes locales. Tipología. Medios de transmisión. Métodos de acceso. Dispositivos de interconexión.
+	9. Administración de redes locales. Gestión de usuarios. Gestión de dispositivos. Monitorización y control de tráfico. Gestión SNMP.
+	10. Principales protocolos de la arquitectura de comunicaciones TCP/IP: ARP, IPv4/IPv6, ICMP, UDP, TCP, DNS, TELNET, FTP, HTTP, SMTP y DHCP.
+	11. Planificación física de un centro de tratamiento de la información. Vulnerabilidades, riesgo y protección. Dimensionamiento de equipos. 
+		Factores a considerar.
+	12. Conmutación. Conmutación de circuitos y paquetes. X25. Frame Relay, ATM. Integración voz-datos sobre FR, IP, ATM. 
+		Protocolos de encaminamiento. Ethernet conmutada. MPLS. Calidad de servicio (QOS).
+	13. La seguridad en redes. Control de accesos. Técnicas criptográficas. Mecanismos de firma digital. 
+		Intrusiones. Cortafuegos. Redes privadas virtuales.
+	14. La red Internet: arquitectura de red. Principios de funcionamiento. 
+		Servicios: evolución, estado actual y perspectivas de futuro. La web 2.0.
+	15. Tecnología XDSL. Concepto. Características técnicas. Normativa reguladora. 
+		Telecomunicaciones por cable: características y normativa reguladora.
+	16. Telecomunicaciones de voz. Tecnologías VoIP. Convergencia telefonía fija-telefonía móvil.
+	17. Comunicaciones móviles. Telefonía sin hilos y DECT. Paging. Radiotelefonía privada. 
+		Sistemas celulares. Trunking. GSM, GPRS y UMTS. Evolución 3G: HDSPA y HSUPA.
+	18. Redes inalámbricas: protocolos 802.11x Wi-Fi y WiMAX. Características funcionales y técnicas. 
+		Sistemas de expansión del espectro. Sistemas de acceso. Modos de operación. Seguridad. Normativa reguladora.
+	19. Comunicaciones emergentes: IP móvil y PLC (Power Line Comunications). Características técnicas. 
+		Modos de operación. Seguridad. Normativa reguladora. Ventajas e inconvenientes. Televisión digital. Radiodifusión sonora Digital.
+

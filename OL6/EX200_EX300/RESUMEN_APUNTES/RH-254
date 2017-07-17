@@ -1,0 +1,2904 @@
+RH - 254
+System Adminstration III - 3
+
+Chapter 1. SystemD
+Creacion de SERVICIOS  (fuera del examen)
+-Vamos a usar un script nuestro y ponerlo como SERVICIO del sistema
+Chapter 2. NETWORKING - IPv6
+    Nomenclaura
+    Sintaxis
+    Aplicarlo con NM
+Chapter 3. Link Agregation and Bridging
+    teaming    (mejor que bonding)        De multiplis interfaces de red ==> crear 1 solo
+    bonding
+    bridging    Que nuestro interfaz sea BRIDGE
+Chapter 4. Network Port Security
+Funcionalidad     
+    Port-forwarding
+    Mask
+    Rules
+Chapter 5. DNS for SERVERS
+    Gestion
+    Servidor bind (levanta el server por completo)
+    Mounta un DNS-Cache  (unbound=es mas liviando, consume menos recursos)
+
+Chapter 6. EMAIL
+    Configuracion
+    Usar postfix
+
+Chapter 7. Remote Block Storage iSCSI
+        SAN
+        Montar un server SCSI
+        Vamos a poder distribuuir devices enteros
+
+Chapter 8. Server NFS y Server SAMBA 
+    NFS
+    Samba
+Chapter 9. MARIADB Databases
+    Instalar MariaDB
+
+Chapter 10. Apache HTTPD Web Service
+
+Chapter 11. Writing Bash Scripts
+
+Chapter 13. SHELL BASH: Conditional Structures and Control Structures
+
+Chapter 14  Docker  (contenedores=espacio enjaulado de procesamiento de modo seguro)
+        cuberneib = Gestor de Contenedores
+        El libro es muy básico
+
+
+Chapter 1.   SystemD
+
+-Herramienta que controla los servicios a traves de UNITs
+-Antes era con SystemV y los servicios delegaban en el proceso INIT
+-Estos scripts de SystemV se levantaban serializados
+-SystemD permite la gestion paralalela de startup de services
+-Estas unidades crean dependencias unas de otras
+
+-Cuando SystemD arranca ==> Crea todas las unidades
+VENTAJAS:
+1- Arranque mas rapido
+2- Podemos establecer el orden logico de arranque de los servicio
+3- Convierte los PUNTOS DE MONTAJE en UNIDADES
+
+SystemD gestiona UNITS de tipo Service, Sockets y Paths
+- Podemos reiniciar los SERVICES y mantener los SOCKETSs
+
+
+
+student@server4 ~]$ systemctl                --salen todas las UNITS
+UNIT                        LOAD   ACTIVE SUB       DESCRIPTION
+proc-sys...t_misc.automount loaded active waiting   Arbitrary Executable File Fo
+sys-devi...-net-eth0.device loaded active plugged   Virtio network device
+sys-devi...-vda-vda1.device loaded active plugged   /sys/devices/pci0000:00/0000
+sys-devi...block-vda.device loaded active plugged   /sys/devices/pci0000:00/0000
+
+SUB = SUBUNIT
+
+[student@server4 ~]$ systemctl --type=service        --UNITS     tipo service
+UNIT                               LOAD   ACTIVE SUB     DESCRIPTION
+abrt-ccpp.service                  loaded active exited  Install ABRT coredump hook
+abrt-oops.service                  loaded active running ABRT kernel log watcher
+
+[student@server4 ~]$ systemctl --type=path        --UNITS     tipo path
+UNIT                               LOAD   ACTIVE SUB     DESCRIPTION
+brandbot.path                  loaded active waiting Flexible branding
+cups.path                          loaded active waiting CUPS Printer Service Spool
+
+[student@server4 ~]$ ystemctl status rngd.services    --status del service rngd
+rngd.service - Hardware RNG Entropy Gatherer Daemon
+   Loaded: loaded (/usr/lib/systemd/system/rngd.service; enabled)
+   Active: failed (Result: exit-code) since Thu 2015-03-05 09:52:35 CET; 18min ago
+  Process: 513 ExecStart=/sbin/rngd -f (code=exited, status=1/FAILURE)
+ Main PID: 513 (code=exited, status=1/FAILURE)
+   CGroup: /system.slice/rngd.service
+
+[student@server4 ~]$ systemctl is-active sshd        --¿está activo el ssh?
+active
+[student@server4 ~]$ systemctl is-enabled sshd    --¿estará enable en el arranque?
+enabled
+
+[student@server4 ~]$ systemctl   list-units                ==> Units loaded
+[student@server4 ~]$ systemctl   systemctl list-units --all         ==> Units loaded y unloaded
+
+student@server4 ~]$ cd /etc/systemd/system/        -- Dir. config. de SystemD
+student@server4 system]$ ll
+total 12
+drwxr-xr-x. 2 root root   54 Jul 11  2014 basic.target.wants
+drwxr-xr-x. 2 root root   30 Jul 11  2014 bluetooth.target.wants
+lrwxrwxrwx. 1 root root   41 Jul 11  2014 dbus-org.bluez.service -> /usr/lib/systemd/system/bluetooth.service
+lrwxrwxrwx. 1 root root   41 Jul 11  2014 dbus-org.fedoraproject.FirewallD1.service -> /usr/lib/systemd/system/firewalld.service
+lrwxrwxrwx. 1 root root   44 May  7  2014 dbus-org.freedesktop.Avahi.service -> /usr/lib/systemd/system/avahi-daemon.service
+lrwxrwxrwx. 1 root root   44 Jul 11  2014 dbus-org.freedesktop.ModemManager1.service -> /usr/lib/systemd/system/ModemManager.service
+lrwxrwxrwx. 1 root root   46 May  7  2014 dbus-org.freedesktop.NetworkManager.service -> /usr/lib/systemd/system/NetworkManager.service
+lrwxrwxrwx. 1 root root   57 May  7  2014 dbus-org.freedesktop.nm-dispatcher.service -> /usr/lib/systemd/system/NetworkManager-dispatcher.service
+lrwxrwxrwx. 1 root root   40 Jul 11  2014 default.target -> /usr/lib/systemd/system/graphical.target
+drwxr-xr-x. 2 root root   85 May  7  2014 default.target.wants
+lrwxrwxrwx. 1 root root   35 Jul 11  2014 display-manager.service -> /usr/lib/systemd/system/gdm.service
+drwxr-xr-x. 2 root root   31 May  7  2014 getty.target.wants
+drwxr-xr-x. 2 root root   63 Jul 11  2014 graphical.target.wants
+drwxr-xr-x. 2 root root 4096 Jul 11  2014 multi-user.target.wants
+drwxr-xr-x. 2 root root   29 May  7  2014 nfs.target.wants
+drwxr-xr-x. 2 root root   25 Jul 11  2014 printer.target.wants
+drwxr-xr-x. 2 root root 4096 Jul 11  2014 sockets.target.wants
+drwxr-xr-x. 2 root root   35 Jul 11  2014 spice-vdagentd.target.wants
+drwxr-xr-x. 2 root root 4096 Jul 11  2014 sysinit.target.wants
+drwxr-xr-x. 2 root root   83 Jul 11  2014 system-update.target.wants
+lrwxrwxrwx. 1 root root    9 May  7  2014 tmp.mount -> /dev/null
+
+cd graphical.target.wants
+ll
+lrwxrwxrwx. 1 root root 47 Jul 11  2014 accounts-daemon.service -> /usr/lib/systemd/system/accounts-daemon.service
+lrwxrwxrwx. 1 root root 44 Jul 11  2014 rtkit-daemon.service -> /usr/lib/systemd/system/rtkit-daemon.service
+
+
+systemctl list-dependencies iptables.service        ==> DEPENDENCIAS POR ABAJO
+iptables.service  (del service iptables dependen muchos services)
+├─system.slice
+└─basic.target
+  ├─alsa-restore.service
+
+systemctl list-dependencies --reverse iptables.service  ==> DEPENDENCIA POR ARRIBA
+iptables.service    (el iptables no necesita a nadie para funcionar)
+
+CONTROLLING THE BOOT PROCESS
+
+
+SELECT a TARGET at  RUNTIME
+
+-Podemos cambiar  de un target a  otro "en caliente, sin reiniciar" , siempre  y cuando tenga la propiedad:
+AllowIsolate=yes
+
+ cat /usr/lib/systemd/system/bluetooth.target
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+
+[Unit]
+Description=Bluetooth
+Documentation=man:systemd.special(7)
+StopWhenUnneeded=yes
+
+cat /usr/lib/systemd/system/multi-user.target
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+
+[Unit]
+Description=Multi-User System
+Documentation=man:systemd.special(7)
+Requires=basic.target
+Conflicts=rescue.service rescue.target
+After=basic.target rescue.service rescue.target
+AllowIsolate=yes            == Podemos cambiar en runtime
+
+[Install]
+Alias=default.target
+
+SELECT a TARGET at  RUNTIME
+
+systemctl get-default
+graphical.target
+
+ll /etc/systemd/system/default.target
+lrwxrwxrwx. 1 root root 40 Jul 11  2014 /etc/systemd/system/default.target -> /usr/lib/systemd/system/graphical.target
+
+Otra forma de cambiar el defaul-target:
+Reboot - tecla - move cursor to entry - e - ir hasta la linea linux16 - añadir lo de azul  - CTROL + X
+
+cat /etc/default/grub
+GRUB_TIMEOUT=1
+GRUB_DISTRIBUTOR="$(sed 's, release .*$,,g' /etc/system-release)"
+GRUB_DEFAULT=saved
+GRUB_DISABLE_SUBMENU=true
+GRUB_TERMINAL_OUTPUT="console"
+GRUB_CMDLINE_LINUX="vconsole.keymap=es console=tty0 crashkernel=auto  vconsole.font=latarcyrheb-sun16" systemd.unit=XX
+GRUB_DISABLE_RECOVERY="true"
+
+
+
+
+
+CREAR UN SERVICE
+
+Sigue existiendo el directorio
+/etc/init.d/
+
+-rw-r--r--. 1 root root 13430 Apr  2  2014 functions
+-rwxr-xr-x. 1 root root  2256 Mar  7  2014 iprdump
+-rwxr-xr-x. 1 root root  2247 Mar  7  2014 iprinit
+-rwxr-xr-x. 1 root root  2269 Mar  7  2014 iprupdate
+-rwxr-xr-x. 1 root root  2989 Apr  2  2014 netconsole
+-rwxr-xr-x. 1 root root  6354 Apr  2  2014 network
+-rw-r--r--. 1 root root  1160 Apr  2  2014 README
+-rwxr-xr-x. 1 root root  2857 Jun 17  2013 rhnsd
+
+
+ll /etc/rc.d/
+total 12
+drwxr-xr-x. 2 root root 4096 Jul 11  2014 init.d
+drwxr-xr-x. 2 root root  111 Jul 11  2014 rc0.d
+drwxr-xr-x. 2 root root  111 Jul 11  2014 rc1.d
+drwxr-xr-x. 2 root root  111 Jul 11  2014 rc2.d
+drwxr-xr-x. 2 root root  111 Jul 11  2014 rc3.d
+drwxr-xr-x. 2 root root  111 Jul 11  2014 rc4.d
+drwxr-xr-x. 2 root root  111 Jul 11  2014 rc5.d
+drwxr-xr-x. 2 root root  111 Jul 11  2014 rc6.d
+-rwxr-xr-x. 1 root root 2652 Jul 11  2014 rc.local
+-rw-r--r--. 1 root root  477 Apr  2  2014 rc.local-pre-station
+
+[student@server4 rc.d]$ cd rc5.d
+[student@server4 rc5.d]$ ll
+total 0
+lrwxrwxrwx. 1 root root 20 May  7  2014 K50netconsole -> ../init.d/netconsole
+lrwxrwxrwx. 1 root root 17 May  7  2014 S10network -> ../init.d/network
+lrwxrwxrwx. 1 root root 17 Jul 11  2014 S20iprinit -> ../init.d/iprinit
+lrwxrwxrwx. 1 root root 19 Jul 11  2014 S20iprupdate -> ../init.d/iprupdate
+lrwxrwxrwx. 1 root root 17 Jul 11  2014 S21iprdump -> ../init.d/iprdump
+lrwxrwxrwx. 1 root root 15 May  7  2014 S97rhnsd -> ../init.d/rhnsd
+
+
+
+ vim myService.sh
+#!/bin/bash
+
+declare NUMARGS="$#"
+declare SCRIPT="$0"
+declare ARG="$1"
+declare GREEN="\e[32m"
+declare NORMAL="\e[0m"
+
+function sanity_check () {
+        ## Comprobar parametro recibido
+        if [ ${NUMARGS} -ne 1 ]; then
+                usage
+        fi
+}
+
+function usage() {
+        ## Informamos del uso del script
+        echo -e "${GREEN}Usage: ${NORMAL}"
+        echo -e "\t ${SCRIPT} start|stop|restart|status"
+        exit 1
+}
+
+function main()
+{
+        case ${ARG} in
+                start)
+                        ## echo "Starting..."
+                        if [ ! -e /tmp/id ];then
+                                /bin/id > /tmp/id
+                        else
+                                echo "Already starting"
+                        fi
+                        ;;
+                stop)
+                        if [ -e /tmp/id ];then
+                                /bin/rm /tmp/id
+                        else
+                                echo "Already stopped"
+                        fi
+                        ## echo "Stoping..."
+                        ;;
+                restart)
+                        /bin/rm /tmp/id
+                        /bin/id > /tmp/id
+                        ## echo "Restarting..."
+                        ;;
+                status)
+                        ## echo "I'm fine, thank you!!!"
+                        if (/bin/cat /tmp/id &>/dev/null );then
+                                echo "Running"
+                        else
+                                echo "Stopped"
+                        fi
+            usage
+    esac
+}
+
+sanity_check
+main
+
+
+
+
+
+
+
+man systemd.service        == Nos ayuda a definir un servicio
+man 7 systemd.directives
+
+PASOS PARA PONER EN MARCHA NUESTRO SCRIPT COMO "SERVICE"
+
+1) Una vez que tenemos el script myService.sh
+cp myService.sh  /usr/local/bin/
+
+2) CREAMOS EL FICHERO de .service
+vim myService.service
+[Unit]
+Description=Service than store user information
+
+[Service]
+Type=oneshot
+User=student                        -- student ejecutará el script /usr/local/bin/myService.sh
+ExecStart=/usr/local/bin/myService.sh start        -- Es el default, al mirar el man vemos que requiere un ExecStart=
+ExecStop=/usr/local/bin/myService.sh stop
+ExecReload=/usr/local/bin/myService.sh restart
+RemainAfterExit=yes                    -- Para que al lanzarlo lo deje active
+
+[Install]
+WantedBy=multi-user.target                -- Lo va a lanzar el target multi-user
+
+        
+3) Lo copiamos al dir. de config. y reiniciamos el daemon de los services
+cp myService.service        /etc/systemd/system/
+systemctl   daemon-reload
+CADA VEZ QUE MODIFIQUEMOS EL myService.sh EJECUTAR en paso 3)
+
+4) Ya lo podemos ver como una UNIT instalada
+systemctl list-unit-files |grep myService
+myService.service                           disabled        -- Ya lo reconoce  como unit, aunque este disabled
+
+5) Lo arrancamos y vemos el status:
+systemctl start myService
+systemctl status myService
+myService.service - Service than store user information
+   Loaded: loaded (/etc/systemd/system/myService.service; disabled)
+   Active: inactive (dead)
+
+SYSTEMD  WIKI ARQ LINUX
+
+
+Chapter 2. NETWORKING  - IPv6  
+
+RH6    Ficheros de configuracion
+RH7    Delegamos totalmente en NM
+    -Ya que NM está siempre activo
+    -SystemD puede gestionar a NM
+    -Si hacemos un cambio en los ficheros de config:  OJO ==> SystemD puede borrarlo
+
+FICHERO DE CONFIGURACION
+/etc/sysconfig/network-scripts/    ifcfg*
+Ahora habŕa links a conexión
+
+CONNECTION
+CON = Conjunto de settings aplicadas a un device
+-Solo 1 conexión activa en cada momento
+-En cada  CON están incluidas: GW y DNS
+-NM aplica cada configuracion a /etc/hosts
+- Cada connection lleva un ID
+
+
+UTILIDAD nmcli
+device =     interfaz de red
+connetion =     Conjunto de settings
+
+nmcli device status            -- Todos los devices
+DEVICE  TYPE          STATE          CONNECTION  
+eth0    ethernet      connected      System eth0
+lo      loopback      unmanaged      --
+
+Para auto-completar, instalar el paquete:
+rpm -q bash-completion
+bash-completion-2.1-6.el7.noarch
+
+nmcli con show            -- Conexion CONFIGURADAS
+NAME         UUID                                  TYPE            DEVICE
+System eth0      5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03  802-3-ethernet  eth0
+
+Las reglas de UDEV, tambien pueden cambiar los nombres de los devices
+
+nmcli con show --active
+NAME         UUID                                  TYPE            DEVICE
+System eth0  5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03  802-3-ethernet  eth0
+
+SETTINGS
+
+ip addr show eth0
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:00:04:0b brd ff:ff:ff:ff:ff:ff
+    inet 172.25.4.11/24 brd 172.25.4.255 scope global dynamic eth0
+       valid_lft 20244sec preferred_lft 20244sec
+    inet6 fe80::5054:ff:fe00:40b/64 scope link
+       valid_lft forever preferred_lft forever
+
+AÑADIR UNA NUEVA CONEXION  (en gnome aparece con el boton "profile")
+
+Necesitamos: nombre, type e interfaz:
+nmcli con add con-name "test" type ethernet ifname eth0
+Connection 'test' (e757fd32-2b93-4ad6-8740-3f2ba6a3483f) successfully added.
+AL NO DARLE PARAMETROS SE CREA EN FORMATO: "DHCP"
+
+nmcli con show
+NAME         UUID                                  TYPE            DEVICE
+test             e757fd32-2b93-4ad6-8740-3f2ba6a3483f  802-3-ethernet  --     
+System eth0      5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03  802-3-ethernet  eth0   
+
+AÑADIR UNA NUEVA CONECTION CON PARAMETROS DE IPv4:
+nmcli connection add con-name "test" type ethernet ifname eth0 ip4 192.168.0.254/24 gw4 192.168.0.254
+Connection 'test' (e28cfd88-d9cb-4253-9035-69cf7abd888a) successfully added.
+
+nmcli con show
+NAME         UUID                                              TYPE            DEVICE
+test             e28cfd88-d9cb-4253-9035-69cf7abd888a      802-3-ethernet  --     
+test             e757fd32-2b93-4ad6-8740-3f2ba6a3483f      802-3-ethernet  --     
+System eth0      5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03      802-3-ethernet  eth0
+
+nmcli con show --active
+NAME         UUID                                  TYPE            DEVICE
+System eth0  5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03  802-3-ethernet  eth0
+
+-SI hacemos down a una conexion, la seguiremos viendo aunque no esté activa
+nmcli  connection down "System eth0"        ==> OJO, que si estamos en REMOTO...NOS DESCONECTAMOS!!!!
+nmcli connection show                ==> las seguimos viendo
+NAME         UUID                                  TYPE            DEVICE
+test         e28cfd88-d9cb-4253-9035-69cf7abd888a  802-3-ethernet  --     
+test         e757fd32-2b93-4ad6-8740-3f2ba6a3483f  802-3-ethernet  --     
+System eth0  5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03  802-3-ethernet  eth0   
+
+
+-Si queremos DESCONECTAR una conexion hacer:
+nmcli  device disconnect  eth0            ==> OJO, que si estamos en REMOTO...NOS DESCONECTAMOS!!!
+
+- Si queremos borrarla del todo:
+nmcli connection delete "test"
+nmcli con show                        ==> Ahora si YA NO APARECEN
+NAME         UUID                                  TYPE            DEVICE
+System eth0  5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03  802-3-ethernet  eth0 
+
+AÑADIR UNA RUTA A UNA CONEXION
+
+ipv4.routes
+
+
+
+HOSTNAMECTL
+-Establece el hostname por DEFECTO y ESTATICO
+-El comando "hostname" cambia el nombre pero no es persistente.
+
+hostnamectl
+   Static hostname: n/a
+Transient hostname: server4.example.com
+         Icon name: computer
+           Chassis: n/a
+        Machine ID: 946cb0e817ea4adb916183df8c4fc817
+           Boot ID: 1ddc55c67a014c41b79fdc469e17af0c
+    Virtualization: kvm
+  Operating System: Red Hat Enterprise Linux Server 7.0 (Maipo)
+       CPE OS Name: cpe:/o:redhat:enterprise_linux:7.0:GA:server
+            Kernel: Linux 3.10.0-123.el7.x86_64
+      Architecture: x86_64
+
+hostnamectl   set-hostname  andres.example.com
+hostnamectl
+   Static hostname: andres.example.com
+         Icon name: computer
+           Chassis: n/a
+        Machine ID: 946cb0e817ea4adb916183df8c4fc817
+           Boot ID: 1ddc55c67a014c41b79fdc469e17af0c
+    Virtualization: kvm
+  Operating System: Red Hat Enterprise Linux Server 7.0 (Maipo)
+       CPE OS Name: cpe:/o:redhat:enterprise_linux:7.0:GA:server
+            Kernel: Linux 3.10.0-123.el7.x86_64
+      Architecture: x86_64
+
+cat /etc/hostname
+andres.example.com        == Lo ha cambiado
+
+
+PRACTICA    -    pagina 31
+
+[student@server4 ~]$ lab ipv6 setup
+[sudo] password for student:
+Setting up for IPv6 practice or lab ... SUCCESS
+
+[student@server4 ~]$ ip link        -- vemos que hay 2 interfaces
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT qlen 1000
+    link/ether 52:54:00:00:04:0b brd ff:ff:ff:ff:ff:ff
+4: eno1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT qlen 1000
+    link/ether d6:71:68:dc:f7:a9 brd ff:ff:ff:ff:ff:ff
+
+[student@server4 ~]$ nmcli con show
+NAME         UUID                                  TYPE            DEVICE
+System eth0  5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03  802-3-ethernet  eth0   
+test         0a346ac0-0387-4b31-88e7-e95468e1ed17  802-3-ethernet  --     
+
+[root@server4 ~]# nmcli con add con-name eno1 type ethernet ifname eno1
+Connection 'eno1' (7f830f67-7091-4dd3-853c-87a8e180ae28) successfully added.
+
+[root@server4 ~]# nmcli connection show
+NAME         UUID                                  TYPE            DEVICE
+System eth0  5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03  802-3-ethernet  eth0   
+eno1         7f830f67-7091-4dd3-853c-87a8e180ae28  802-3-ethernet  eno1   
+test         0a346ac0-0387-4b31-88e7-e95468e1ed17  802-3-ethernet  --     
+
+[root@server4 ~]# ip a s eno1
+4: eno1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether d6:71:68:dc:f7:a9 brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::d471:68ff:fedc:f7a9/64 scope link
+       valid_lft forever preferred_lft forever
+
+[root@server4 ~]# nmcli con show eno1 |grep ipv4
+ipv4.method:                            auto
+ipv4.dns:                               
+ipv4.dns-search:                        
+ipv4.addresses:                         
+ipv4.routes:                            
+ipv4.ignore-auto-routes:                no
+ipv4.ignore-auto-dns:                   no
+ipv4.dhcp-client-id:                    --
+ipv4.dhcp-send-hostname:                yes
+ipv4.dhcp-hostname:                     --
+ipv4.never-default:                     no
+ipv4.may-fail:                          yes
+
+[root@server4 ~]# nmcli con mod eno1 ipv4.addresses 192.168.0.1/24    --hay que poner IP ....
+[root@server4 ~]# nmcli con mod eno1 ipv4.method manual        -- ..y decirle en modo MANUAL
+
+[root@server4 ~]# nmcli con down eno1
+[root@server4 ~]# nmcli con up eno1
+
+[root@server4 ~]# ip addr show dev eno1
+4: eno1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether d6:71:68:dc:f7:a9 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.0.1/24 brd 192.168.0.255 scope global eno1
+       valid_lft forever preferred_lft forever
+    inet6 fe80::d471:68ff:fedc:f7a9/64 scope link
+       valid_lft forever preferred_lft forever
+
+[root@server4 ~]# ping 192.168.0.1
+[root@server4 ~]# ping 192.168.0.254
+
+[root@server4 ~]# ip route
+default via 172.25.4.254 dev eth0  proto static  metric 1024
+172.25.4.0/24 dev eth0  proto kernel  scope link  src 172.25.4.11
+172.25.253.254 via 172.25.4.254 dev eth0  proto static  metric 1
+192.168.0.0/24 dev eno1  proto kernel  scope link  src 192.168.0.1
+
+DOCUMENTACION:
+https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/
+
+
+IPv6  Networking  Concepts
+
+- Ahora ya no hay octetos, son NIVELs
+- Dual-stack = Conviven IPv4 e IPv6
+- Una direccion IPv6 tiene 128 bits
+- Se ponen las letras en minusculas
+- Para poner el puerto se ponen corchetes:
+
+FF FF . FF FF . FF FF . FF FF         - Los primeros 64 bists    ( 4 grupos) =    Network part
+        +
+FF FF . FF FF . FF FF . FF FF         - Los segundos 64 bits    ( 4 grupos) =    Interfaz ID
+
+2001:0db8:0000:0010:0000:0000:0000:0001
+2001:db8:0:10:0:0:0:1
+2001:db8:0:10::1
+
+SOLO SE PUEDE APLICAR TRAILING 1 SOLA VEZ !!!
+Se aplica el TRAILING empezando por la derecha
+Ejemplo:
+2001:0000:0000:0db8:0010:0000:0000:0001
+2001::db8:10::1            -- No puedo acortar 2 veces    = MAL
+2001:0:0:db8:10::1        -- Esto SI                = BIEN
+
+- Para poner el puerto se ponen corchetes:
+[2001:0:0:db8:10::1]:80
+
+
+
+
+ping6 ff02::1%eth0        -- Hay que tener el link-local ACTIVADO  = ff02::1:2
+                -- Es como un PING al broadcast
+
+64 bytes from fe80::5054:ff:fe00:d0b: icmp_seq=2 ttl=64 time=0.408 ms (DUP!)
+64 bytes from fe80::5054:ff:fe00:60a: icmp_seq=2 ttl=64 time=0.410 ms (DUP!)
+64 bytes from fe80::5054:ff:fe00:60b: icmp_seq=2 ttl=64 time=0.412 ms (DUP!)
+64 bytes from fe80::5054:ff:fe00:80b: icmp_seq=2 ttl=64 time=0.415 ms (DUP!)
+64 bytes from fe80::5054:ff:fe00:b: icmp_seq=2 ttl=64 time=0.416 ms (DUP!)
+64 bytes from fe80::5054:ff:fe00:110b: icmp_seq=2 ttl=64 time=0.418 ms (DUP!)
+
+
+
+
+
+IPv6 Network Configuration
+
+DHCPv6
+
+A diferencia del DHCPv4, el server DHCPv6 analiza las IPs
+Hay que desactivar de auto o dhcp ---> manual
+
+
+
+PRACTICA.   pag 54
+LAB:  Managin IPv6 Networking
+
+[student@server4 ~]$  lab ipv6 setup
+
+We trust you have received the usual lecture from the local System
+Administrator. It usually boils down to these three things:
+
+    #1) Respect the privacy of others.
+    #2) Think before you type.
+    #3) With great power comes great responsibility.
+
+[sudo] password for student:
+Setting up for IPv6 practice or lab ... SUCCESS
+[student@server4 ~]$ sudo -i
+[root@server4 ~]# nmcli con add con-name eno1 type ethernet
+Error: 'ifname' argument is required.
+
+[root@server4 ~]# nmcli con add con-name eno1 type ethernet ifname eno1
+Connection 'eno1' (32f7b00a-aab5-459f-93c0-4cad9df05bf1) successfully added.
+[root@server4 ~]# nmcli con mod eno1
+802-3-ethernet.auto-negotiate         connection.gateway-ping-timeout       ipv4.addresses                        ipv6.addresses
+802-3-ethernet.cloned-mac-address     connection.id                         ipv4.dhcp-client-id                   ipv6.dhcp-hostname
+802-3-ethernet.duplex                 connection.interface-name             ipv4.dhcp-hostname                    ipv6.dns
+802-3-ethernet.mac-address            connection.master                     ipv4.dhcp-send-hostname               ipv6.dns-search
+802-3-ethernet.mac-address-blacklist  connection.permissions                ipv4.dns                              ipv6.ignore-auto-dns
+802-3-ethernet.mtu                    connection.read-only                  ipv4.dns-search                       ipv6.ignore-auto-routes
+802-3-ethernet.port                   connection.secondaries                ipv4.ignore-auto-dns                  ipv6.ip6-privacy
+802-3-ethernet.s390-nettype           connection.slave-type                 ipv4.ignore-auto-routes               ipv6.may-fail
+802-3-ethernet.s390-options           connection.timestamp                  ipv4.may-fail                         ipv6.method
+802-3-ethernet.s390-subchannels       connection.type                       ipv4.method                           ipv6.never-default
+802-3-ethernet.speed                  connection.uuid                       ipv4.never-default                    ipv6.routes
+connection.autoconnect                connection.zone                       ipv4.routes                           
+
+[root@server4 ~]# nmcli con mod eno1 ipv4.addresses 192.168.0.100/24
+[root@server4 ~]# nmcli con mod eno1 ipv4.method manual
+
+[root@server4 ~]# nmcli con mod eno1 ipv6.addresses 'fddb:fe2a:ab1e::c0a8:64/64'
+[root@server4 ~]# nmcli con mod eno1 ipv6.method manual
+
+[root@server4 ~]# nmcli con down eno1
+[root@server4 ~]# nmcli con up eno1
+Connection successfully activated (D-Bus active path: /org/freedesktop/NetworkManager/ActiveConnection/2)
+
+[root@server4 ~]# ip a s dev eno1
+4: eno1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 42:45:70:a3:72:b9 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.0.100/24 brd 192.168.0.255 scope global eno1
+       valid_lft forever preferred_lft forever
+    inet6 fddb:fe2a:ab1e::c0a8:64/64 scope global
+       valid_lft forever preferred_lft forever
+    inet6 fe80::4045:70ff:fea3:72b9/64 scope link
+       valid_lft forever preferred_lft forever
+
+[root@server4 ~]# ping -I eno1 192.168.0.254
+PING 192.168.0.254 (192.168.0.254) from 192.168.0.100 eno1: 56(84) bytes of data.
+64 bytes from 192.168.0.254: icmp_seq=1 ttl=64 time=0.058 ms
+64 bytes from 192.168.0.254: icmp_seq=2 ttl=64 time=0.059 ms
+64 bytes from 192.168.0.254: icmp_seq=3 ttl=64 time=0.057 ms
+^C
+--- 192.168.0.254 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 1999ms
+rtt min/avg/max/mdev = 0.057/0.058/0.059/0.000 ms
+[root@server4 ~]# ping6 -I eno1 fddb:fe2a:ab1e::c0a8:64/64
+unknown host
+[root@server4 ~]# ping6 -I eno1 fddb:fe2a:ab1e::c0a8
+PING fddb:fe2a:ab1e::c0a8(fddb:fe2a:ab1e::c0a8) from fddb:fe2a:ab1e::c0a8:64 eno1: 56 data bytes
+^C
+--- fddb:fe2a:ab1e::c0a8 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 999ms
+
+[root@server4 ~]# ping6 -I eno1 fddb:fe2a:ab1e::c0a8:fe
+PING fddb:fe2a:ab1e::c0a8:fe(fddb:fe2a:ab1e::c0a8:fe) from fddb:fe2a:ab1e::c0a8:64 eno1: 56 data bytes
+64 bytes from fddb:fe2a:ab1e::c0a8:fe: icmp_seq=1 ttl=64 time=0.081 ms
+64 bytes from fddb:fe2a:ab1e::c0a8:fe: icmp_seq=2 ttl=64 time=0.067 ms
+^C
+--- fddb:fe2a:ab1e::c0a8:fe ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 999ms
+rtt min/avg/max/mdev = 0.067/0.074/0.081/0.007 ms
+
+[root@server4 ~]# lab ipv6 grade
+IPv4 address is correct ....... PASS
+IPv4 gateway can be reached ... PASS
+IPv6 address is correct ....... PASS
+IPv6 gateway can be reached ... PASS
+[root@server4 ~]# more /etc/sysconfig/network-scripts/ifcfg-e
+ifcfg-eno1  ifcfg-eth0  
+[root@server4 ~]# more /etc/sysconfig/network-scripts/ifcfg-eno1
+TYPE=Ethernet
+BOOTPROTO=none
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=no
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+NAME=eno1
+UUID=32f7b00a-aab5-459f-93c0-4cad9df05bf1
+DEVICE=eno1
+ONBOOT=yes
+IPADDR0=192.168.0.100
+PREFIX0=24
+IPV6ADDR=fddb:fe2a:ab1e::c0a8:64/64
+[root@server4 ~]# nmcli con show eno1
+connection.id:                          eno1
+connection.uuid:                        32f7b00a-aab5-459f-93c0-4cad9df05bf1
+connection.interface-name:              eno1
+connection.type:                        802-3-ethernet
+connection.autoconnect:                 yes
+connection.timestamp:                   1425642327
+connection.read-only:                   no
+connection.permissions:                 
+connection.zone:                        --
+connection.master:                      --
+connection.slave-type:                  --
+connection.secondaries:                 
+connection.gateway-ping-timeout:        0
+802-3-ethernet.port:                    --
+802-3-ethernet.speed:                   0
+802-3-ethernet.duplex:                  --
+802-3-ethernet.auto-negotiate:          yes
+802-3-ethernet.mac-address:             --
+802-3-ethernet.cloned-mac-address:      --
+802-3-ethernet.mac-address-blacklist:   
+802-3-ethernet.mtu:                     auto
+802-3-ethernet.s390-subchannels:        
+802-3-ethernet.s390-nettype:            --
+802-3-ethernet.s390-options:            
+ipv4.method:                            manual
+ipv4.dns:                               
+ipv4.dns-search:                        
+ipv4.addresses:                         { ip = 192.168.0.100/24, gw = 0.0.0.0 }
+ipv4.routes:                            
+ipv4.ignore-auto-routes:                no
+ipv4.ignore-auto-dns:                   no
+ipv4.dhcp-client-id:                    --
+ipv4.dhcp-send-hostname:                yes
+ipv4.dhcp-hostname:                     --
+ipv4.never-default:                     no
+ipv4.may-fail:                          yes
+ipv6.method:                            manual
+ipv6.dns:                               
+ipv6.dns-search:                        
+ipv6.addresses:                         { ip = fddb:fe2a:ab1e::c0a8:64/64, gw = :: }
+ipv6.routes:                            
+ipv6.ignore-auto-routes:                no
+ipv6.ignore-auto-dns:                   no
+ipv6.never-default:                     no
+ipv6.may-fail:                          yes
+ipv6.ip6-privacy:                       -1 (unknown)
+ipv6.dhcp-hostname:                     --
+GENERAL.NAME:                           eno1
+GENERAL.UUID:                           32f7b00a-aab5-459f-93c0-4cad9df05bf1
+GENERAL.DEVICES:                        eno1
+GENERAL.STATE:                          activated
+GENERAL.DEFAULT:                        no
+GENERAL.DEFAULT6:                       no
+GENERAL.VPN:                            no
+GENERAL.ZONE:                           --
+GENERAL.DBUS-PATH:                      /org/freedesktop/NetworkManager/ActiveConnection/2
+GENERAL.CON-PATH:                       /org/freedesktop/NetworkManager/Settings/1
+GENERAL.SPEC-OBJECT:                    --
+GENERAL.MASTER-PATH:                    --
+IP4.ADDRESS[1]:                         ip = 192.168.0.100/24, gw = 0.0.0.0
+IP6.ADDRESS[1]:                         ip = fddb:fe2a:ab1e::c0a8:64/64, gw = ::
+IP6.ADDRESS[2]:                         ip = fe80::4045:70ff:fea3:72b9/64, gw = ::
+
+
+Chapter 3.  Link Agregation and Bridging
+9-3-15
+Teaming= crear un "team" con varias interfaces de red, como si fuesen 1 solo.
+    bonding == Teaming   ¿Diferencia? : el teaming usa un módulo mas moderno
+    runner: ¿qué es? : Es el método de "cómo trabajan los interfaces de red entre ellos"
+
+    TIPOS DE RUNNER:
+    Broadcast = Todos los interfaces emiten paquetes
+    RoundRobin = Cada paquete es enviado secuencialmente  por un interface.
+        Pueden ser  de la misma o distinta conexion
+        Ojo: Si hay un selector de MAC, este runner igual no nos vale
+    Active/Backup:
+        Cuando queremos tener uno a  la espera por si se rompe o cae el Activo
+        Cuando el pasivo se ponga en marcha,es posible que haya q reiniciar la conexion
+    LoadBalance
+        Multiples interfaces activos y dependiendo de la carga de tráfico, el runner redirige los paquetes
+    lacp
+        Usa un protocolo de loadbalance especifico usado por el teaming
+
+Servicio de teaming cargado
+
+Configuraciones TEAMING
+    1)    A nivel fisico
+    2)    Por cada interfaz asginar una configracion de conexion
+    
+
+CONSIDERACIONES
+1-Arrancar el interfaz TEAMING ==> NO significa que arranquen las interfaces
+
+2-Arrancar un interfaz TEAMING ==> SI significa que arranquen las interfaces
+
+3-Parar interfaz puerto ==> el TEAMING se viene abajo
+
+4-Un  interafaz TEAM  sin puertos puede iniciar conexiones IP estáticas
+
+5-Un interfaz TEAM que no tiene  ports config. que tenga conexion DHCP espera que arranque 1 interfaz
+
+6-Un interfaz TEAM con DHCP conection: esperando sus ports: se completa cuando un puerto con portadora es añadido
+
+7-Un interfaz TEAM con DHCP conection: espera a que la CAPA de TRANSPORTE DHCP responda y a partir de ese momento se levanta
+
+
+
+Bridging: Crear pasarelas entre devices
+
+CONFIGURING NETWORK  TEAMS
+
+1) Crear interfaz
+2) Asginamos atributos IPv4 v6
+3) Asginamos interfaces fisicos
+4) Levantamos interfaz TEAM (o uno  de sus puertos)
+
+MANAGING NETWORK TEAMING
+
+CONFIGURATION FILES
+
+JSON = es un formato de DICCIONARIOS de objetos:
+    {  "attribute1" : "value1" ,
+       "attribute2" : "value2" ,
+Ejemplo:
+    { "runner" :  {"name" :  "roundrobin"}}
+
+SETTINGS
+
+Hay que tener 2 interfaces: eth1 y eth2
+1) Creamos la interfaz TEAM:
+nmcli connection add type team con-name "First team" ifname"team0" config '{"runner":{"name":"roundrobin"}}'
+Connection 'First team' (91f21ce6-c2d3-4517-8ad2-bbc05c73dc63) successfully added.
+
+ip ad s
+3: team0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN
+    link/ether be:e3:f3:47:d9:d4 brd ff:ff:ff:ff:ff:ff
+
+2) Asignamos atributos IPv4
+nmcli con  mod "team0" ipv4.addresses 172.25.4.50/24
+nmcli con  mod "team0" ipv4.method manual
+
+3) Ahora añado el interfaz "eth1" y "eth2" al TEAM
+nmcli con add type team-slave ifname eth1 master team0 con-name team0-eth1
+nmcli con add type team-slave ifname eth2 master team0 con-name team0-eth2
+
+4) Bring de team and port interfaces up/down
+nmcli con up  team0
+nmcli dev dis  eth2
+
+
+
+timedctl
+    Nos permite controlar los team
+THOBLESHOTINGS
+    
+Las tarjetas de RED tienen  2 leds:
+- led de si tienen links (energia)
+- led de : mandar/recibir datos
+
+Herramienta: ethtool
+Con esta herramienta podemos:
+- Identificar el device
+ethtool  -p  pds0  30        --- Durante 30 segundos parpadea con una 
+
+
+
+CREAR UNA RULE PARA QUE UDEV RENOMBRE LOS DEVICES:
+
+Aqui se van a aplicar relgas en orden:
+Las reglas de UDEV hacen lo siguiente:
+-TIPO
+-Atributes: Fabricante, modelo
+-ACCIONES
+
+vim "/etc/udev/rules.d/70-net.rules"        (previamente hemos apuntados las MACs de nuestras dev"
+SUBSYSTEM="net" , ACTION="add", DRIVERS="?*", ATTR(address)="3a:e5:a1:ce:2b:df", KERNEL="eno*", NAME="eth1"
+SUBSYSTEM="net" , ACTION="add", DRIVERS="?*", ATTR(address)="ee:e6:2b:b9:6a:0b", KERNEL="eno*", NAME="eth2"
+
+- Luego reiniciamos el sistema
+
+biosdevname=0      (en el GRUB)
+
+ACTIVAR la rule de UDEV:
+[root@server4 ~]# udevadm control --reload-rules
+[root@server4 ~]# udevadm trigger --attr-match=subsystem=net
+
+
+
+
+
+SOFTWARE BRIDGES
+
+Bridges:
+Crea tablas con direccion MACs informando en que RED están dichas MACs
+NM = Permite crear devices type bridde
+
+1) Crear conection type bridge
+    br0 br1 br2
+
+2) Configurar el/los intefaces fisicos que van a hacer el bridge
+    bridge-slave    (sobre un device fisico)
+
+¿Se puede hacer un BRIGE sobre un device tipo TEAM (o BONDING)?
+SI, pero NO con nmcli
+Hay que hacerlo a mano con los ficheros de configuracion
+
+
+Chapter 4.  Network Port Security
+
+Idea = Cada zona pre-definida se puede asginar a un interfaz
+2 maneras de general Rules RICH:
+Direct Rules
+    Se procesa antes que cualquier RULE de FirewallD
+    Reglas con estilo de IPTABLES
+
+Rich Rules
+    Estrctura de una regla enriquecida:
+    rule
+        [ source ] address =     IP source            -- Normalmente hay que poner family
+        [ destination ] address = IP destination o IP red        -- Normalmente hay que poner b
+    service | port | protocol | masquerade | port-forward
+    [ log ]
+    [ audit ]
+        [accept | reject | drop ]
+    
+Managing Rich Rules
+Son reglas de firewald enriquecidas
+Son muy parecidas a iptables
+FirewalD asigna unas RULES  a cada zona.
+    Ej Zona HOME => Deja pasar el SSH
+
+Crear una nueva cadena en IPTABLES
+iptables  -N  myChain
+iptabables  -I INPUT -s 192.168.0.0/24  -j myChain
+
+Podemos llamar a firewall-cmd con REGLAS ENRIQUECIDAS
+Una regla enriquecida es gestionada por Firewalld
+Esa regla luego la podemos asignar a una zone
+
+La opcion es time-out es interesante, porque tarda en aplicar las reglas un tiempo (podemos hacer pruebas)
+
+Rule Ordering:
+1. Cualquier port-forwarding o Masquerade rule => se aplica a la zona
+2. Cualquier logging rule ==> Se aplica a la zona
+3. Cualquier deny rule ==> Se aplica a la zona
+4. Cualquier allow rule ==>  Se aplica a la zona
+
+
+
+Ejemplo de rich RULE:
+
+firewal-cmd    --add-rich-rule =  
+    rule  family=ipv4  source address=192.168.0.0/24
+        destination address=172.25.0.11/32
+        port  port=222
+        protocol = tcp
+        reject
+Explicacion= Paquetes de IPv4 que vengan de la red 192.168.0.0 hacia la IP172.25.0.11 puerto 222/TP ===> REJECT
+
+El mismo concepto de rich DIRECT será:  (se aplica antes que las richs siempre)
+    -- direct
+    INPUT 0
+    -s 192.168.0.0/24  -s 172.25.0.11
+    --dport 222  -p  tcp  -j REJECT
+
+- Las ZONAS van asociadas por INTERFACE
+- Cuando cambiamos de ZONA ==> Se aplican otras RULES
+
+- Recordar: 
+Firewall-cmd, los comandos se aplican en memoria y no son permanentes
+Podemos probar  y ver que se cumplen los requisitos
+Si queremos permanente :
+firewall-cmd  -- permanent  ... y despues
+firewall-cmd ---reload
+
+Logging with rich rules
+- Con firewall-cmd los envios de logs se pueden limitar
+- Se pueden sumar a rules rich
+
+
+
+Masquerading  and  Port  Forwarding
+
+Recordemos: 
+tabla filter =     chains: INPUT, OUPUT y FORWARDING
+table nat =    chains PRE-ROUTING y POST-ROUNTING
+
+Masquerading:
+SNAT = Se cambia el Source IP
+El Masquerading es realmente un SNAT, la diferencia es que se pone la IP del Firewall
+El Masquerading solo se puede tener activo en IPv4
+En IPv6 ya no hará falta el Masquerading (ya que habrá IPv6 de sobra
+El SNAT-salvo casos muy particulares- no se suele activar.
+
+
+Port forwarding = DNAT
+-Modifica de un paquete la IP destination y/o Port destination
+-Siempre que hay un port-forwarding ==> vamos ha de existir un Masquerading
+¿Como se construye un port-forwarding?
+
+
+cat /etc/firewalld/zones/public.xml
+<?xml version="1.0" encoding="utf-8"?>
+<zone>
+  <short>Public</short>
+  <description>For use in public areas. You do not trust the other computers on networks to not harm your computer. Only selected incoming connections are accepted.</description>
+  <service name="dhcpv6-client"/>
+  <service name="ssh"/>
+  <rule family="ipv4">
+    <source address="172.25.4.10/32"/>
+    <forward-port to-port="22" protocol="tcp" port="443"/>
+  </rule>
+</zone>
+
+[root@server4 zones]# pwd
+/etc/firewalld/zones
+[root@server4 zones]# ls -lrt
+total 12
+-rw-r--r--. 1 root root 315 May  7  2014 public.xml.old        -- Guarda el ultimo cambio anterior al permanent
+-rw-r--r--. 1 root root 255 Jul 11  2014 ROL.xml
+-rw-r--r--. 1 root root 446 Mar 10 11:01 public.xml
+
+Managing  SELinux  Port Labeling
+
+Idea = "Donde permitimos"
+
+Los propios servicios tienen que crear sus propias policys
+
+Contexto:
+Apache tiene la capidad de ejecutar ficheros con contexto CGI
+
+SEMANAGE
+semanage    =    SE Linux Manage
+Podemos ver / cambiar la politica de SELUNIX
+Politicas = runtime o Persistente
+Lo normal es modificar la default policy
+
+semanage fcontext    = modifica politica de files  (fcontext= file context)
+semanage boolean    = modifica politica de booleanos de selinux
+semanage port  -l    = Lista politicas relativas a puertos
+SELinux Port Type              Proto    Port Number
+afs3_callback_port_t           tcp      7001
+afs3_callback_port_t           udp      7001
+afs_bos_port_t                 udp      7007
+afs_fs_port_t                  tcp      2040
+. . . . 
+
+SELINUX tiene 5 contextos:
+_u  :      _r  :      _t  :          s (n):          c (n)
+user     rol     target     sensitivy     category
+
+Politicas MLS y  MCS
+MCS = Multi Category Security
+MLS  = Multi Level  Security  (mira los 5 contextos)
+    Si aplicamos esta , se puede limitar a root (por ejemplo que no acceda a los $HOME de los usuarios)
+
+- u = Los contextos de user indican QUÉ user es responsable de un fichero, proceso
+
+- r = Un ROL = un grupo de usuarios que hacen una tarea: Idem al anterior pero en grupos
+
+-t = TARGET.  No importa que user seas, tener un TARGET para acceder a un recurso
+        Red Hat se basa solo en este contexto
+
+sentitivy:    Es una forma mas precisa y fina del acceso a los recursos
+        Delimitar quien puede acceder 
+
+unconfined    Cuando veamos esto,es que no estan ENJAULADOS (no están confinados)
+
+SELINUX
+
+
+Ej:
+id -Z
+unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023        unconfined_r = en este caso puedo llegar a todos lados
+
+id -Z student
+id: cannot print security context when user specified        -.root no puede ver el context de un user
+
+gopher = es el protocolo anterior previos al WWW (el teletexto se basa en gopher)
+
+
+Chapter 5.   DNS for SERVERS
+Def: Resolucion de nombres con IPs (Domain Name System)
+DNS: Es un sistema de nombres jerarquicos que sirve como un directorio de hosts en red y recursos.
+La jerarquia DNS empieza con el "root domain" que es el "."
+Los domains como com, net y org ocupan el 2º nivel
+Los domains como example.com y redhat.com ocupan el 3er nivel y asi.. sucesivamente.
+Los nombres se separan en partes llamados : DOMINIOS (o zonas)
+
+3 Tipos de DNS:
+DNS zona authority
+Hay unos 7
+Contendrá registros fisicos
+Solo los slaves pueden accede a él.
+El slave se trae una COPIA:  NO ES MODIFICABLE y tiene un TTL (tiempo de vida)
+
+DNS zona slave
+Esclavos del anterior
+Todo el mundo puede acceder al DNS-slave
+
+DNS cache-only
+    No tiene ficheros fisicos almacenados de registros
+    Solo tiene registros "cacheados" en memoria
+
+DNS-Cache
+    Es muy interesante tenerlo en una empresa, porque resuelve mas rapido
+
+REGISTRO  - DNS
+Estan compuestos por varias columnas:
+owner-name    Nombre propietarios    
+TTL        Dice cuanto tiempo el registro tiene que ser cacheado por el DNS resolver
+class        siempre IN = Internet
+type        El tipo de informacion almacenada (A=IPv4)
+Data        Los datos almacenados en este registro
+
+Ejemplo:
+owner-name        TTL        class        type        Data
+www.google.com    300 (sg)        IN (internet)    A (ipv4)        216.58.210.164
+    
+
+
+TIPOS DE REGISTRO
+A        
+hostname ---> IPv4
+
+AAAA
+hostname ---> IPv6
+
+CNAME (canonical name)
+    Se usa como ALIAS
+    hostname ----> hostname
+
+PTR    (pointer)
+    Mapea de IPv6 o IPv4 ----> hostname
+    Son usados para reverse DNS resolution
+    Deberia haber uno por cada A o AAAA
+
+MX  (mail exchange)
+    Aqui esta la maquina responsable de recibir los mails para ese dominnio
+    En la columna Data hay un Nª = PRIORIDAD (cuanto mas bajo ==> mayor prioridad)
+
+NS  (name server)
+    Da info de: cual es el server de consulta para una ZONA
+TXT 
+    Info datos legibles por humanos (no se usa mucho)
+
+SRV  (service) 
+    Da info de cual es el SERVER responsable para un servicio ( No se usa mucho )
+
+SOA  (start of authority)
+    Nos ofrece info de la ZONA AUTHORITARY
+    Dará siempre 1 record SOA por 1 zona
+
+    Master nameserver    Host responsable de la zona
+    RNAME            mail del esponsable de la zona
+    Serial number        Es el nº de version del Auth
+(Indica si ha cambiado la info de la zona)  Util para los slaves
+    Refresh            Cada cuanto tiempo los slaves se actualizan
+    Retry            Cada cuanto tiempo tiene que reintentar en caso de fallo
+    Expiry            Si el refresh falla => Cuanto duran los datos que tienen los slaves
+    Minimum        Info generica para los DNS-caches
+Se le dice al DNS-CACHE: "si un registro no lo encuentras, almacenalo durante un tiempo para no reintentar constantemente"
+
+
+
+Comando host
+host -v    verbose
+host -t    type  (por defecto IPv4)
+
+Ejemplo:
+host  -v  -t  A example.com
+host  -v  -t  AAAA a.root-servers.net
+host  -v  -t  PTR 8.8.8.8
+host  -v -t  NS  example.com
+
+DNS CACHE-ONLY
+caching nameservers: almacenan resultaros de querys dns en una cache local y borran registros del cache cuando su TTL expira
+
+Hay 3 formas distintas:
+1 - Server completo para cache-only  
+(server BIND)    (no lo veremos)
+2 - dnsmasq    (es muy simple, no lo veremos)
+    -Se basa en 2 ficheros:
+    /etc/hosts    (nuestra red local)
+    /etc/resolv.conf    (para consultar a otros DNS)
+    No tiene capacidad para user DNSSEC
+3 - unbound
+    Es un dns-server de solo cacheo  (cached-only)
+    Es como si cogieramos un cacho del BIND                                                                  
+    Puede usar DNSSEC
+
+DNSSEC validation (DNS Security Extension)
+Habitualmente los DNS transmitian la info por UDP. Esto permitia modificar esa INFO (envenenamiento de DNS)
+Esta validacion permite la integridad y autenticidad de los registros antes de situarlos en el caché para uso de los clientes
+La IANA creó el DNSSEC  (Cifrado simetrico de claves publicas con organismos de confianza)
+rssig     = firma
+Si la cadena de confianza de la entidades se rompe :  se rechaza el registro
+
+
+CONFIGURING  a CACHING NAMESERVER
+1) 
+yum install -y unbound            - Instalamos el servicio unbound
+
+2)
+systemctl  start  unbound        - Lo arrancamos
+systemctl  enable unbound
+
+3)
+vim  /etc/unbound/unbound.conf
+interface      0.0.0.0            ==> el server DNS escucha de todas las IPv4
+access-control    172.25.0.0/24        ==> A que red le permito hacer consultas
+forward-zone:
+    name: "."            ==> Para todas las zonas o dominios no encontrados...
+    forward-addr: 172.25.254.254    ==> ...   redirijo las peticiones que no tengo cacheadas a esta IP
+domain-insecure: example.com        ==> Si la cadena de confianza se rompe: sigo ofreciendo registros (bypass a DNSSEC validation)
+trust-anchor:                  ==> ancla de confianza. Le ponemos a pelo en DNSKEY con un dig previo
+                    ej:   dig +dnssec DNSKEY example.com
+trust-anchor:                  example.com.            3600    IN      DNSKEY  256 3 8
+AwEAAajz7mvxb69EEGk7TPfs+H6kuyLLTu/mEHZDgEsE1a3ZZ2kLLMEY2EJdtyFT6rmKH8cWBeqtA+0dPtjSg+nAicyQP3BBHdWCUu4TeLI4MWGpI7gVDxb5mTYg96Ov//5gah4SW8kD0jYV3LVFrYqyLpvIXy+vnNPM+ JiHPY2pZ
+
+
+4)
+unbound-checkconf            - Comprobamos errores en el fichero
+5)
+systemctl  restart unbound
+6)
+firewall-cmd  --permanent  -add-service=dns    -- Abrimos el DNS en el firewall
+firewall-cmd  --reload
+
+STUB RESOLVER
+
+1 - /etc/hosts
+
+2 - /etc/resolv.cong
+
+    nameserver    172.25.4.254        DNS primario
+    nameserver    172.25.4.252        DNS secundario
+    nameserver    . . . . . . . . 
+
+Podemos cambiar este orden tocando el fichero:
+/etc/nsswitch.conf
+
+Fichero /etc/nsswitch.conf
+Las entradas de este fichero se llaman ENTIDADES:
+# Example:
+#passwd:    db files nisplus nis
+#shadow:    db files nisplus nis
+#group:     db files nisplus nis
+
+passwd:     files sss
+shadow:     files sss
+group:      files sss
+#initgroups: files
+
+#hosts:     db files nisplus nis dns
+hosts:      files dns
+
+# Example - obey only what nisplus tells us...
+#services:   nisplus [NOTFOUND=return] files
+#networks:   nisplus [NOTFOUND=return] files
+#protocols:  nisplus [NOTFOUND=return] files
+#rpc:        nisplus [NOTFOUND=return] files
+#ethers:     nisplus [NOTFOUND=return] files
+#netmasks:   nisplus [NOTFOUND=return] files     
+
+bootparams: nisplus [NOTFOUND=return] files
+
+ethers:     files
+netmasks:   files
+networks:   files
+protocols:  files
+rpc:        files
+services:   files sss
+
+netgroup:   files sss
+
+publickey:  nisplus
+
+automount:  files
+aliases:    files nisplus
+
+
+COMANDOS QUE USAN EL STUB-RESOLVER
+getent hosts google.com
+2a00:1450:4003:808::200e google.com
+
+gethostip google.com
+
+
+Comando DIG
+dig: Por defecto consulta al DNS primariio pidiendo un registro type A
+
+dig  -t  AAAA
+dig  -t  A
+dig  -t  NS
+dig  -t  MX
+dig  -t  TXT
+
+[root@server4 ~]# dig google.com
+
+; <<>> DiG 9.9.4-RedHat-9.9.4-14.el7 <<>> google.com
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 58191
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 4, ADDITIONAL: 5
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+;; QUESTION SECTION:
+;google.com.            IN    A
+
+;; ANSWER SECTION:
+google.com.        300    IN    A    216.58.210.174
+
+;; AUTHORITY SECTION:
+google.com.        164913    IN    NS    ns1.google.com.
+google.com.        164913    IN    NS    ns3.google.com.
+google.com.        164913    IN    NS    ns2.google.com.
+google.com.        164913    IN    NS    ns4.google.com.
+
+;; ADDITIONAL SECTION:
+ns2.google.com.        337714    IN    A    216.239.34.10
+ns3.google.com.        164913    IN    A    216.239.36.10
+ns1.google.com.        337713    IN    A    216.239.32.10
+ns4.google.com.        164913    IN    A    216.239.38.10
+
+;; Query time: 27 msec
+;; SERVER: 172.25.254.254#53(172.25.254.254)
+;; WHEN: Wed Mar 11 11:12:54 CET 2015
+;; MSG SIZE  rcvd: 191
+
+[root@server4 ~]# dig server.example.com
+
+; <<>> DiG 9.9.4-RedHat-9.9.4-14.el7 <<>> server.example.com
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN, id: 8237
+;; flags: qr aa rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 1, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+;; QUESTION SECTION:
+;server.example.com.        IN    A        (esta vacio! no hay)
+
+;; AUTHORITY SECTION:
+example.com.        60    IN    SOA    classroom.example.com. root.classroom.example.com. 2013091600 3600 300 604800 60
+
+;; Query time: 1 msec
+;; SERVER: 172.25.254.254#53(172.25.254.254)
+;; WHEN: Wed Mar 11 11:13:50 CET 2015
+;; MSG SIZE  rcvd: 98
+
+[root@server4 ~]# dig -x  172.25.4.11                resolucion inversa (como PTR)
+
+; <<>> DiG 9.9.4-RedHat-9.9.4-14.el7 <<>> -x 172.25.4.11
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 37230
+;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 1, ADDITIONAL: 2
+    aa = zona authoritativa
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+;; QUESTION SECTION:
+;11.4.25.172.in-addr.arpa.    IN    PTR
+
+;; ANSWER SECTION:
+11.4.25.172.in-addr.arpa. 86400    IN    PTR    server4.example.com.
+
+;; AUTHORITY SECTION:
+25.172.in-addr.arpa.    86400    IN    NS    classroom.example.com.
+
+;; ADDITIONAL SECTION:
+classroom.example.com.    86400    IN    A    172.25.254.254
+
+;; Query time: 1 msec
+;; SERVER: 172.25.254.254#53(172.25.254.254)
+;; WHEN: Wed Mar 11 11:15:24 CET 2015
+;; MSG SIZE  rcvd: 126
+
+
+[root@server4 ~]# dig -t A server4.example.com  @172.25.4.11        @ => preguntamos al DNS 172.25.4.11
+
+; <<>> DiG 9.9.4-RedHat-9.9.4-14.el7 <<>> -t A server4.example.com @172.25.4.11
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 29565
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+No está el flag aa!!
+
+Status:
+NOERROR        Ojo, pero puede que la info no esté actualizada o completa
+REFUSED
+
+
+Other common DNS  issues
+Problemas tipicos:
+"El server DNS-cache, no tiene info actualizada"
+
+"que un CN apunta a otra CN y no se resuelve la IP"
+
+
+
+DNS AUTORITATIVO    (fuera de temario)
+vamos a hacerlo con BIND
+1)
+yum install bind -y
+rpm -qc bind
+/etc/logrotate.d/named
+/etc/named.conf
+/etc/named.iscdlv.key
+/etc/named.rfc1912.zones
+/etc/named.root.key
+/etc/rndc.conf
+/etc/rndc.key
+/etc/sysconfig/named
+/var/named/named.ca
+/var/named/named.empty
+/var/named/named.localhost
+/var/named/named.loopback
+
+2) 
+vim   /etc/named.conf
+options {
+listen-on port 53 { 0.0.0.0; };        -- En todas las interfaces
+        listen-on-v6 port 53 { ::1; };
+        directory       "/var/named";
+        dump-file       "/var/named/data/cache_dump.db";
+        statistics-file "/var/named/data/named_stats.txt";
+        memstatistics-file "/var/named/data/named_mem_stats.txt";
+allow-query     { any; };            -- Cualquiera
+
+     recursion yes;
+
+     # dnssec-enable yes;            -- Comentamos estas lineas
+        # dnssec-validation yes;
+        # dnssec-lookaside auto;
+
+logging {
+        channel default_debug {
+                file "data/named.run";
+                severity dynamic;
+        };
+};
+zone "." IN {
+        type hint;
+        file "named.ca";
+};
+zone "tron.com" IN {
+        type master;
+        file "tron.com.zone";
+};
+
+
+3)
+Ahora toca crear un fichero de registros
+cd /var/named/
+ls
+data  dynamic  named.ca  named.empty  named.localhost  named.loopback  slaves
+cp named.empty tron.com
+vim tron.com.zone
+Creamos un fichero de zona:
+$TTL 3H
+tron.com.       IN SOA   tron.com.      root.localhost (
+                                        0       ; serial
+                                        1D      ; refresh
+                                        1H      ; retry
+                                        1W      ; expire
+                                        3H )    ; minimum
+tron.com.       NS      flynn.tron.com.
+flynn           A       172.25.0.11
+clu     30      A       172.25.0.10
+
+ls -lZ tron.com.zone
+-rw-r-----. root root unconfined_u:object_r:named_zone_t:s0 tron.com.zone
+
+rpm -ql bind|grep check
+/usr/sbin/dnssec-checkds
+/usr/sbin/named-checkconf
+/usr/sbin/named-checkzone
+
+named-checkconf /etc/named.conf
+named-checkzone tron.com tron.com.zone
+zone tron.com/IN: loaded serial 0
+OK
+
+chgrp named tron.com.zone
+
+4) 
+ss -tulpn| grep :53
+tcp    UNCONN     0      0                      *:53299                 *:*      users:(("rpc.statd",1236,8))
+tcp    UNCONN     0      0                      *:5353                  *:*      users:(("avahi-daemon",485,12))
+
+5) Permitir al FIREWALL
+
+
+Chapter 6.  EMAIL
+12-3-15
+Vamos  a ver la configuracion de un C/S de la transmision mail
+NULL CLIENT = Es un servidor de correo que solo envia correos,.. y solo acepta correos de cuentas locales
+
+
+postfix     Es un frontend de sendmail (es lo que lleva por debajo)
+    Es un Mail  Delivery Agent (MDA)
+    Por defecto RedHat instala postfix como SMTP.
+
+MTA : Usa protocolo SMTP para comunicarse con otro MTA
+
+Recipientes mail de tipo POP e IMAP3 usandos son dovecot y Cyrus
+
+
+
+CONFIGURACION e-mail con POSTFX
+
+Es muy sencillo a diferencia de sendmail
+Todo va a ir configurado en el fichero:
+/etc/postfix/main.cf
+
+Otros ficheros de configuracion estan en:
+/etc/postfix/master.cf
+
+CONFIGURATION  SETTINGS  como NULL CLIENT
+DIRECTIVAS de /etc/postfix/main.cf:
+
+inet_interfaces        Qué network interface's va a escuchar el correo del servidor
+            ej: "inet_interfaces=loopback-only" ==> Solo redistribuye correo desde el sistema local
+            ej:  "inet_interfaces = all"  ==> todas las interfaces que tengamos aceptaran cualquier conexion
+            null client = solo lOCAL HOST
+
+myorigin        Machacamos la cabecera origen del mail  ( igual que usabamos masquerade)
+Todos los mensajes salientes (outgoing) les ponemos el dominio emisor (sender)
+Ej: myorigins = desktop4.example.com (pondremos en los mensajes este dominio)
+
+relayhost        Aqui podemos delegar el servidor de correo saliente
+Por defecto viene vacio
+relay == retransmitir
+null client = BLANCO
+
+mydestination        Qué correos admito. Cual o cuales son los dominios de los cuales somos responsables
+            Servidor de correo entrante
+             postconf -e 'mydestination='         ==> Prohibe al servidor de correo entregar mensajes a cuentas locales
+                             ==>La unica opcion que tendrá es re-enviar los mensajes
+            null client = BLANCO
+
+local_transport        Establece cual es el Agente MDA que va a gestionar el correo
+            Por defecto: local:$myhostname
+            local_transport = error: local delivery disable  == previene clasificar cualquier msg en mailboxes
+
+mynetworks        A qué redes les permitimos que nos usen como servidor de correo saliente
+            Redes o IP v4/v6 separadas por un espacio " "
+            Ej: 'mynetworks = 0.0.0.0/0'    ==> aceptamos cualquier red (lo clasico)
+            null client = solo lOCAL HOST
+
+No se debe editar a MANO ¿porque? porque puede haber directivas repetidas y se aplicará la ULTIMA
+¿COMO LO EDITAMOS? ==> Comando postconf
+
+Comando postconf
+
+postconf        Muestra TODAS las directivas del fichero de config con sus valores actuales
+postconf  -d        Directivas por defecto
+postconf  -n        Directivas modificadas
+postconf  directive    Nos muestra el valor de una directiva concreta
+postconf  inet_interfaces  myorigin
+postconf   -e        Editar una directiva
+postconf   -e  'myorigin = value'
+
+COLA de MENSAJES
+postqueue  -p        Nos imprime como  esta la cola de mensajes
+postqueue  -f        Fuerza a intento de entrega
+Intenta hacer un flush para limpiar al cola
+
+BUZONES DE CORREO:
+/var/spool/mail/student
+
+
+PRACTICA  pagina 168
+
+postconf lab smtp-nullclient setup
+postconf -e 'relayhost=[smtp4.example.com]'
+postconf -e 'inet_interfaces=loopback-only'
+postconf -e 'mynetworks=127.0.0.0/8 [::1]/128'
+postconf -e 'myorigins=desktop4.example.com'
+postconf -e 'mydestination='
+postconf -e 'local_transport=error: local delivery disable'
+
+systemctl restart postfix.service
+vim /etc/postfix/main.cf
+
+systemctl restart postfix.service
+lab smtp-nullclient grade
+
+PARA LEER:
+mail -s "server4 null client" student@desktop4.example.com
+mutt -f imaps://imap4.example.com
+
+
+PRACTICA FUERA DE TEMARIO
+Tenemos un servidor solo SALIENTE: server4
+
+root@server4 ~]# 
+postconf inet_interfaces
+    2  postconf -e 'inet_interfaces = 172.25.4.11'
+    3  postconf mydestination
+    4  postconf -e 'mydestination='
+    5  postconf mynetworks
+    6  postconf -e 'mynetworks = 0.0.0.0/0'
+    7  postconf local_transport
+    8  postconf -e 'local_transport = error local delivery disable'
+    9  postconf myorigin
+   10  postconf -e 'myorigin = smtp4.example.com'
+   11  firewall-cmd --permanent --add-service=smtp
+   12  firewall-cmd --reload
+   13  systemctl restart postfix.service
+   14  echo dummy|mail -s dummy student@smtp4.example.com
+   15  echo dummy|mail -s dummy student@localhost
+   16  vim /etc/postfix/master.cf
+   17  postqueue -p
+   18  postqueue -f
+   19  postqueue -p
+   20  postqueue -f
+   21  postqueue -p
+   22  postqueue -f
+   23  postqueue -p
+   24  postqueue -f
+   25  postqueue -p
+   26  postqueue -f
+   27  postqueue -p
+   28  postconf -n
+   29  postconf -e 'local_transport = error: local delivery disable'
+   30  systemctl restart postfix.service
+
+root@server4 ~]# history
+    1  tail -f /var/log/maillog
+    2  tail -f n0 /var/log/maillog
+
+[root@desktop4 ~]# history
+    1  postconf mynetworks
+    2  postconf relayhost
+    3  postconf -e 'relayhost=server4.example.com'
+    4  systemctl restart postfix.service
+    5  tail -f n0 /var/log/maillog
+    6  mail
+    7  firewall-cmd --set-default-zone=trusted
+    8  nc smtp0.example.com 25
+    9  nc desktop0.example.com 25
+
+  1 echo First Try|mail -s Test student@smtp4.example.com
+    2  postconf -e 'mydestination = smtp4.example.com'
+    3  postconf local_transport
+    4  postconf mynetworks
+    5  postconf -e 'mynetworks = 0.0.0.0/0'
+    6  postconf inet_interfaces
+    7  postconf -e 'inet_interfaces = all'
+    8  systemctl restart postfix.service
+    9  firewall-cmd --add-service=smtp
+   10  firewall-cmd --reload
+   11  firewall-cmd --permanent
+   12  firewall-cmd --reload
+   13  firewall-cmd --permanent --add-service=smtp
+   14  firewall-cmd --reload
+   15  postconf -n
+   16  firewall-cmd --list-all
+
+AUTENTICACION
+Vamos a delegar en dovecot    = MDA
+Vamos a delegar que postfix pregunte  a dobecot si estamos autenticados
+SASL: Simple Authentication and Security Layer (capa de seguridad y autenticación simple).
+El  profesor nos pasa un fichero PDF:  "Postfix+Dovecot+Auth-pdf"  (mirar en DRIVE)
+
+
+Chapter 7.  Remote Block Storage  iSCSI
+13-3-15
+SCSI = Small Computer System Interface
+stack = monton
+HBA = Host Bus Adapter
+jobs.redhat.com
+INTRODUCCION A iSCSI
+Componente SERVIDOR
+Componente CLIENTE
+
+ext3 y ext4 : van mal en temas de concurrencias
+gfs2 :  trabaja mejor
+- En vez de Filesystems, vamos a trabajar con Devices
+- Estos Devices van a estar en RED, pero los vamos a ver como si estuvieran Localmente
+
+Protocolo iSCSI
+-Device SCISI = Device que nos deja manejarle como tipo bloque  ( limitacion cable=20m )
+-iSCSI = Permite trabajar en redes LAN y WAN
+-Gracias a "Fiber channel" se consigiuo superara la velocidad del cobre (1Gbit/s) llegando a los 10-30 Gigabit/s
+-iSCSI trabaja a nivel HW y SW:
+HW == Protocolo HBA  
+    Las empresas compran una cabina de Discos
+SW== Mediante TCP se comunican C/S
+-Device SCSI = Va a ir por una red AISLADA  (en el curso no es asi)
+
+-Por defecto: Al usar SCSI va a traves de TCP ==> No admite seguridad. Habrá que establecer tuneles seguros o IPSec
+iSCSI COMPONENTS FUNDAMENTALS
+
+initiator    cliente iSCSI, implementado como SCSI HBA. Deben coger nombres unicos (IQN)
+        "es cómo denominamos a un cliente = Iscsi Qualifed Name"
+
+Target        Recurso de almacenamiento de iSCSI
+        Es un device.   Pueden ofrecer multiplos devices. 
+Será un conjunto de LUNs
+
+ACL        Es una restriccion de acceso usan el nodo IQN
+        No tiene que ver con las ACL de los ficheros
+
+discovery    Preguntar a un target server para listar los targets configurados
+        Procedimiento por el que 1 initiator puede acceder a los targets de un server
+
+IQN        Iscsi Qualifed Name = Nombre unico mundial usado para initiators y targets
+        Es una cadena:
+        iqn.YYYY-MM.com.reversed.server0 : target-identifier
+(YYYY-MM suele ser el date de la acquisision del domain)
+
+login        Autenticacion a un Target o LUN para empezara usar el block device
+Metodo por el cual un initiator se logea en un servdor
+Si el servidor lo requiere     
+
+LUN        Logical Unit Number, numerado al block device conectado a un target disponible
+        extensiontarget+Num
+        Es el recurso directo ofrecido
+
+node        Cualquier iSCSI initiator o iSCSI target
+
+portal        Es una direction IP + puerto
+        Es el servidor que nos ofrece todos los targets
+        Es el interfaz por el cual permito conectarme al server
+
+TPG        Target Portal Group
+        Especifica un conjunto de portals , para tener un acceso
+--------------------
+
+targetcli
+/> ls
+o- / ................................................................
+  o- backstores .........................................
+  | o- block ..............particiones o LVM
+  | o- fileio ..............ficheros
+  | o- pscsi ........    phisical SCSI
+  | o- ramdisk ..........device volatil
+  o- iscsi .......................................................
+  o- loopback .
+
+
+Chapter 8.  NFS - SERVER
+19-1-15
+Vamos a ver : COMO MONTAR UN SERVER NFS
+A tener en cuenta: qué permisos tenemos en el server
+NFS : Protocolo de compartir files UNIX.
+Redhat7: nfsv4
+Simplifica la configuracion de parametros de red
+Ahora permite trabajar con TCP (antes  solo UDP)
+un solo puerto (antes varios)
+Tamaño de ficheros, bloques, velocidad, sync
+Capacidad de trabajar con Kerberos
+    
+
+Fichero configuracion:  /etc/export
+/shared/nfs        *              ( r o )
+Ruta_directorio_nfs    A_quienes_comparto     qué permisos
+
+Export options:
+ro        read only    El directorio puede esta a 777, pero al montarlo el cliente estará en ro
+rw        read write
+no_root_squash    ==>     es la q tiene por defecto es root_squash
+            root_squash: "El usuario root en el cliente ==> Siempre es mapeado a usuario "nobody"
+            si eres el user UID=1000, trabajaras con el UID=1000 en el server (IDENTITY)
+            "todo lo que voy a compartir será mapeado como nobody" (otra opcion)
+all_squash    Todos los usuarios seran mapeados al user "nobody"
+
+Por defecto : NFS no trabaja con ACLs, excepto que el cliente se instale un paquete:  nfs-acl-tools.x86_64
+Servidor y Cliente == Tienen que tener el mismo UID para compartir
+
+CONFIGURING  NFS SERVER
+[root@desktop4 ~]# systemctl start nfs-server
+
+PROTECTING  NFS EXPORTs
+Tenemos la propiedad :  sec
+sec = sys   (or defecto,  Mapeo de usuarios starndar  (UID cliente 0 = UID server 0)...)
+
+Security methods:
+
+none    Accesos anonimos Se mapean con user: nobody
+
+krb5    Se usa kerberos sin mas (el uid del cliente, se mapea al uid de kerberos)
+    No ofrece proteccion ala hora de transmitir datos
+
+krb5i    Identificacion de cliente y server  (TLS)
+
+krb5p    Se cifran los datos
+
+keytab    =    Fichero que contiene la info en el server de kerveros para identificarse
+
+KERBEROS-enabled   NFS SERVER
+
+
+SELinux  and labeled  NFS
+
+Todo lo que montemos en el cliente ==> Tendrá el contexto de SELINUS al lado del server
+El cliente puede montar .. con  contextos de SELINUX
+
+contexto:  public_content_t        Solo lectura
+         public_content_rw_t        RW
+
+NFS v.3
+[student@server4 ~]$ grep 111 /etc/services
+sunrpc          111/tcp         portmapper rpcbind      # RPC 4.0 portmapper TCP
+sunrpc          111/udp         portmapper rpcbind      # RPC 4.0 portmapper UDP
+
+El puerto 111 ==> era como el GATEWAY de puertos
+
+NFS v.4
+El  puerto 2049 hace de pasarela a otros SERVICIOS
+
+En el FireWall habria que poner:
+-m  state
+--state  RELATED, ESTABLISHED
+-J  ACCEPT
+NFS  -j  ACCEPT  (2049)        -- Solo para version 4 de NFS
+
+Service que estabalece los puntos de montaje:
+[root@server4 ~]# more /usr/lib/firewalld/services/mountd.xml
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>mountd</short>
+  <description>NFS Mount Lock Daemon</description>
+  <port protocol="tcp" port="20048"/>
+  <port protocol="udp" port="20048"/>
+</service>
+
+ more /usr/lib/firewalld/services/imaps.xml
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>IMAP over SSL</short>
+  <description>The Internet Message Access Protocol over SSL (IMAPs) allows a local client to access email on a remote server in a secure way. If you plan to provide
+a IMAP over SSL service (e.g. with dovecot), enable this option.</description>
+  <port protocol="tcp" port="993"/>
+</service>
+[root@server4 ~]# more /usr/lib/firewalld/services/nfs.xml
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>NFS4</short>
+  <description>The NFS4 protocol is used to share files via TCP networking. You will need to have the NFS tools installed and properly configure your NFS server for t
+his option to be useful.</description>
+  <port protocol="tcp" port="2049"/>
+</service>
+
+Mirar aqui para configurar las opciones de exportado:
+man  5  nfs
+man  5  exports
+Aqui hay ejemplos de tablas de exportados
+
+SMB server
+SAMBA
+Service  Message Block = Standar establecido por Microsoft
+Usando por windows para comui¡nicarse entre ellos 
+En el 1999 se llamaba  CIFS = Common Internet file System, Ahora se vuelve a llamar SMB
+Veremos como montar un server SMB que da info a clientes : Linux y Windows (Apple seguramente tambien) (Android puede)
+
+Pasos:
+Es un poco mas tedioso que NFS
+1)  Instalar paquete samba
+    yum install samba
+    (samba-common y samba-doc = Se suele instalar)
+2) Preparamos los permisos del directorio que vamos a compartir
+    mkdir  /dirsamba
+3) Configurar el fichero configuracion:
+    /etc/samba/smb.conf
+    Permisos basicos del filesystem
+4) Si se van a conectar clientes Windows, habrá que crear users/passwords
+5) Arrancar SMB
+6) Abrir puertos den Firewall
+7) Verificar desde el cliente
+
+
+semanage -vvFR  /sharedpath        -F = forced . Modifica las politicas persistentes
+chcon    Permite cambiar contextos a ficheros 
+    Es persistente a reiniciios, pero si hago un restorecon ...>> esa politica se pierde
+    un restorecon hace un re-etiquetado
+
+
+
+File    /etc/samba/smb.conf
+
+[ global ]    Config GENERICA del servidor SAMBA
+        Puerto, acceso, dominio que genera el server
+[ printers ]    Impresoras compartidas mediante SAMBA
+[ homes ]    Compartir usuarios $HOME de Linux a traves de SAMBA
+------------------------------------------------------------------------------------------------------------------------------------------------------
+[ global ]
+workgroup    Especifica el grupo de trabajo de Windows
+        Por lo genereal se llama workgroup
+workgroup = WORKGROUP
+        
+security    Cómo los usuarios se autentican en el servidor SAMBA
+security  = users
+
+hosts allow    Lista de hosts a los que permitimos el acceso al server SAMBA, separada por comas o TABS
+hosts allow
+
+host deny
+
+[ printers ]
+        Dónde estan las impresoras segun CUPS
+[ homes ]    
+        El cliente de samba deberia logearse con el usuario linux
+        Si pongo student, se podrá acceder al $HOME de student
+        samba_enable_home_dirs (boolean)    En el CLIENTE. 
+        use_samba_home_dirs            En el SERVER. Permite a los ficheros SMB compartidos.. ser montados 
+------------------------------------------------------------------------------------------------------------------------------------------------------
+[ File Share sections]    
+path        Apunta al fichero compartido
+writable    Si el recursos es read only o no
+writable = yes    Todo el mundo que acceda al directorio samba , puede hacer lo que quiera
+write list    Usuarios/grupos dentro de RedHat que tendran permisos de escritura
+        +  :  grupos BIND 
+        @ :  Linux groups  NIS
+
+valid  users    Para saber dentro de SAMBA, qué usuarios pueden acceder al recurso compartido
+        El usuario "guest" de samba es un usuario por defecto
+        public  = yes ==> el usuario guest puede acceder
+        public  = no  ==> Solo lo que ponga en valid users
+
+testparams    Comando para verificar la sintaxis del fichero de config
+
+- La autenticacion de SAMBA viaja en texto PLANO .. OJO !!
+- Nunca deberiamos permitir que un usuario linux  se logee en SAMBA
+
+
+
+smbpasswd  -a  fred        -- Permito que un usuario se logee en SMB
+                -- Genera un fichero
+New SMB passwrd:
+Retype new SMB passwrd:
+                -- Ojo que si a fred le ponemos una shell, esta passwd
+smbedit  -L            -- Veo listado de usuarios / pass (cryp) de SAMBA
+
+[root@server4 ~]# more /usr/lib/firewalld/services/samba.xml
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>Samba</short>
+  <description>This option allows you to access and participate in Windows file and printer sharing networks. You need the samba package installed for this option to
+be useful.</description>
+  <port protocol="udp" port="137"/>
+  <port protocol="udp" port="138"/>
+  <port protocol="tcp" port="139"/>
+  <port protocol="tcp" port="445"/>
+  <module name="nf_conntrack_netbios_ns"/>
+
+grep 445/tcp /etc/services
+microsoft-ds    445/tcp
+
+
+
+MULTIUSER  SMB mount
+
+EN EL CLIENTE:
+El multiuser es una propiedad
+Permitimos que el cliente lo monte con unos servicios basicos
+
+PRACTICA:
+EN EL SERVER4:
+yum install -y samba
+mkadir /sambaspace/
+ chmod 2775 /sambaspace/
+semanage fcontext -a -t samba_share_t '/sambaspace(./*)?'
+restorecon -vvFR /sambaspace/
+ ll -dZ /sambaspace/
+drwxrwsr-x. root sales system_u:object_r:samba_share_t:s0 /sambaspace/
+
+
+vim /etc/samba/smb.conf
+    workgroup = salesdep
+    security = user
+        passdb backend = tdbsam
+[smbspace]
+    path = /sambaspace
+    write list = @salesdep
+
+
+yum -y install samba-client
+groupadd -r salesdep
+useradd -s /sbin/nologin frank
+useradd -s /sbin/nologin martin -G salesdep
+
+smbpasswd -a frank
+smbpasswd -a martin
+
+systemctl start smb nmb
+systemctl enable smb nmb
+firewall-cmd --add-service=samba --permanent
+firewall-cmd --reload
+
+EN DESKTOP4
+
+yum install -y cifs-utils
+vim credential_smb.txt
+username=frank
+password=redhat
+
+
+mkdir /mnt/salesshare 
+chmod 600 credential_smb.txt
+
+
+vim /etc/fstab
+//server4/smbspace    /mnt/salesshare     cifs     credentials=/root/credential_smb.txt,multiuser,sec=ntlmssp     0 0
+mount /mnt/salesshare 
+
+
+
+Chapter 9.  MARIADB  Databases
+17-3-15
+
+Historia:
+MySQL es inventado por SunMicrosystems
+MySQL En 2008 es comprada por Oracle ( el proceso de adquisicion empezó en 2002)
+MySQL era OpenSource, tenia GPLs (licencias abiertas)
+En 2014 Oracle deja de hacer soporte para MySQL
+MariaDB == es lo mismo que == MySQL
+MariaDB no está incluido en el core toolset de RedHat, aunque esta disponible en Software Collections 1.1
+MariaDB
+¿Como instalar una BBDD  MariaDB?
+Como funciona?
+Como se Administra?
+Como se Configura?
+Como se activa? 
+Puertos de escucha?
+
+¿Como instalar una BBDD  MariaDB?
+Lo vamos a hacer con un grupo de paquetes MariaDB:
+Mariadb-server (server)     obligatorio
+Mariadb  (client)        obligatorio
+
+Fichero principal:
+/etc/my.cnf    No se aconseja tocarlo
+[mysqld]
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+# Disabling symbolic-links is recommended to prevent assorted security risks
+symbolic-links=0
+# Settings user and group are ignored when systemd is used.
+# If you need to run mysqld under a different user or group,
+# customize your systemd unit file for mariadb according to the
+# instructions in http://fedoraproject.org/wiki/Systemd
+[mysqld_safe]
+log-error=/var/log/mariadb/mariadb.log
+pid-file=/var/run/mariadb/mariadb.pid
+#
+# include all files from the config directory
+#
+!includedir /etc/my.cnf.d
+
+Instalacion de MariaDB:
+yum  groupinstall -y  mariadb{,client}
+systemctl start mariadb
+systemctl enable mariadb
+ln -s '/usr/lib/systemd/system/mariadb.service' '/etc/systemd/system/multi-user.target.wants/mariadb.service'
+tail -f /var/log/mariadb/mariadb.log
+InnoDB: 127 rollback segment(s) active.
+InnoDB: Creating foreign key constraint system tables
+InnoDB: Foreign key constraint system tables created
+150317 11:12:21  InnoDB: Waiting for the background threads to start
+150317 11:12:22 Percona XtraDB (http://www.percona.com) 5.5.35-MariaDB-33.0 started; log sequence number 0
+150317 11:12:22 [Note] Plugin 'FEEDBACK' is disabled.
+150317 11:12:22 [Note] Server socket created on IP: '0.0.0.0'.
+150317 11:12:22 [Note] Event Scheduler: Loaded 0 events
+150317 11:12:22 [Note] /usr/libexec/mysqld: ready for connections.
+Version: '5.5.35-MariaDB'  socket: '/var/lib/mysql/mysql.sock'  port: 3306  MariaDB Server
+
+Vamos a securizar MariaDB:
+mysql_secure_installation
+/usr/bin/mysql_secure_installation: line 379: find_mysql_client: command not found
+
+NOTE: RUNNING ALL PARTS OF THIS SCRIPT IS RECOMMENDED FOR ALL MariaDB
+      SERVERS IN PRODUCTION USE!  PLEASE READ EACH STEP CAREFULLY!
+
+In order to log into MariaDB to secure it, we'll need the current
+password for the root user.  If you've just installed MariaDB, and
+you haven't set the root password yet, the password will be blank,
+so you should just press enter here.
+Enter current password for root (enter for none):
+OK, successfully used password, moving on...
+Setting the root password ensures that nobody can log into the MariaDB
+root user without the proper authorisation.
+Set root password? [Y/n] y
+New password:
+Re-enter new password:
+Password updated successfully!
+Reloading privilege tables..
+ ... Success!
+By default, a MariaDB installation has an anonymous user, allowing anyone
+to log into MariaDB without having to have a user account created for
+them.  This is intended only for testing, and to make the installation
+go a bit smoother.  You should remove them before moving into a
+production environment.
+Remove anonymous users? [Y/n] Y
+ ... Success!
+Normally, root should only be allowed to connect from 'localhost'.  This
+ensures that someone cannot guess at the root password from the network.
+Disallow root login remotely? [Y/n] Y
+ ... Success!
+By default, MariaDB comes with a database named 'test' that anyone can
+access.  This is also intended only for testing, and should be removed
+before moving into a production environment.
+Remove test database and access to it? [Y/n] Y
+ - Dropping test database...
+ ... Success!
+ - Removing privileges on test database...
+ ... Success!
+
+Reloading the privilege tables will ensure that all changes made so far
+will take effect immediately.
+Reload privilege tables now? [Y/n] Y
+ ... Success!
+Cleaning up...
+All done!  If you've completed all of the above steps, your MariaDB
+installation should now be secure.
+Thanks for using MariaDB!
+
+ss -tulpn|grep 3306        -- Está esciuchando por todas las interfaces y no queremos eso!!
+tcp    LISTEN     0      50                     *:3306                  *:*      users:(("mysqld",595,13))
+
+vim /etc/my.cnf
+skip-networking=1
+
+ss -tulpn|grep 3306
+ya no sale ningun puerto listen
+
+
+
+
+DIRECTIVAS del fichero   /etc/my.cnf
+
+bind-address        IPv4, IPv6, rango IPs, dominios, etc
+    MariaDB: escucha por un interfaz o por todas
+
+skip-networking
+Deshabilita la red, para que ningun recurso remoto acceda a la BBDD por red
+Si los recursos locales acceden por localhost ==> tampoco pueden !!
+¿como se conectarn los usuarios?
+Pues SOLO por un fichero de SOCKET !!!
+
+Working with MariaDB
+
+[root@server4 ~]# mysql -u root -p
+MariaDB [(none)]> help;
+?         (\?) Synonym for `help'.
+clear     (\c) Clear the current input statement.
+connect   (\r) Reconnect to the server. Optional arguments are db and host.
+delimiter (\d) Set statement delimiter.
+edit      (\e) Edit command with $EDITOR.
+ego       (\G) Send command to mysql server, display result vertically.
+exit      (\q) Exit mysql. Same as quit.
+go        (\g) Send command to mysql server.
+help      (\h) Display this help.
+nopager   (\n) Disable pager, print to stdout.
+notee     (\t) Don't write into outfile.
+pager     (\P) Set PAGER [to_pager]. Print the query results via PAGER.
+print     (\p) Print current command.
+prompt    (\R) Change your mysql prompt.
+quit      (\q) Quit mysql.
+rehash    (\#) Rebuild completion hash.
+source    (\.) Execute an SQL script file. Takes a file name as an argument.
+status    (\s) Get status information from the server.
+system    (\!) Execute a system shell command.
+tee       (\T) Set outfile [to_outfile]. Append everything into given outfile.
+use       (\u) Use another database. Takes database name as argument.
+charset   (\C) Switch to another charset. Might be needed for processing binlog with multi-byte charsets.
+warnings  (\W) Show warnings after every statement.
+nowarning (\w) Don't show warnings after every statement.
+
+MariaDB [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
++--------------------+
+3 rows in set (0.00 sec)
+
+[root@server4 ~]# mysql -u root mysql -p
+MariaDB [mysql]>
+
+
+Managing Database Users and Access Rights
+
+Vamos a crear un usuario linux para que acceda a una bases de datos
+
+MariaDB [mysql]> use   information_schema
+MariaDB [information_schema]> show tables
++---------------------------------------+
+| Tables_in_information_schema          |
++---------------------------------------+
+| CHARACTER_SETS                        |
+| CLIENT_STATISTICS                     |
+| COLLATIONS                            |
+| COLLATION_CHARACTER_SET_APPLICABILITY |
+ . . . 
+
+MariaDB [information_schema]> select * from USER_PRIVILEGES;
++--------------------+---------------+-------------------------+--------------+
+| GRANTEE            | TABLE_CATALOG | PRIVILEGE_TYPE          | IS_GRANTABLE |
++--------------------+---------------+-------------------------+--------------+
+| 'root'@'localhost' | def           | SELECT                  | YES          |
+| 'root'@'localhost' | def           | INSERT                  | YES          |
+| 'root'@'localhost' | def           | UPDATE                  | YES          |
+| 'root'@'localhost' | def           | DELETE                  | YES          |
+| 'root'@'localhost' | def           | CREATE                  | YES          |
+
+MariaDB [information_schema]> create user mobius@localhost identified by 'redhat';
+Query OK, 0 rows affected (0.00 sec)
+
+MariaDB [inventory]> use mysql
+MariaDB [mysql]> select host,user,password  from user where user='mobius';
++-----------+--------+-------------------------------------------+
+| host      | user   | password                                  |
++-----------+--------+-------------------------------------------+
+| localhost | mobius | *84BB5DF4823DA319BBF86C99624479A198E6EEE9 |
++-----------+--------+-------------------------------------------+
+
+IMPORTANTE:  Los usuarios se definen unidos al host desde donde se conectan !!!
+
+
+
+Creating  and Restoring  MariaDB  Backups
+Fisico y Logico
+
+PRACTICA:  BACKUP / RESTORE FISICO de una BBDD MariaDB
+Directorio principal de MariaDB:
+mkdir   /var/lib/mysql
+
+fdisk /dev/vdb
+pvcreate /dev/vdb1
+vgcreate mariadb /dev/vdb1
+lvcreate -n mydb -L 3G mariadb                -- Creamos un LV de 3 GB
+mkfs.ext4 /dev/mapper/mariadb-mydb
+mkdir /var/lib/mysql
+echo "/dev/mapper/mariadb-mydb /var/lib/mysql ext4 defaults 0 0" >> /etc/fstab
+mount -a
+df -h
+Filesystem                Size  Used Avail Use% Mounted on
+/dev/mapper/mariadb-mydb  2.9G  9.0M  2.8G   1% /var/lib/mysql
+
+systemctl start mariadb
+systemctl enable mariadb
+mysql_secure_installation
+
+mysql -u root -p
+MariaDB [(none)]>  create database inventory;
+
+ mysql -u root -p inventory  < ~student/mariadb.dump        -- Se importa un DMP desde un fichero que nos pasa el profesor
+
+ mysql -u root -p
+MariaDB [(none)]> use inventory
+MariaDB [inventory]> show tables
+    -> ;
++---------------------+
+| Tables_in_inventory |
++---------------------+
+| category            |
+| manufacturer        |
+| product             |
++---------------------+
+
+MariaDB [inventory]> FLUSH TABLES WITH READ LOCK;        -- Bloqueamos mariadb
+MariaDB [inventory]> delete from product where id=1;        -- Intentamos borrar pero se queda congelado
+
+lvcreate -s -L 20M -n mariadb-snap /dev/mariadb/mydb        -- Creamos un LV snapshot, con mariadb CONGELADA
+    Logical volume "mariadb-snap" created
+
+MariaDB [inventory]> UNLOCK TABLES;                -- Desbloqueamos las tablas (se hace el delete)
+
+lvs
+  LV           VG      Attr       LSize  Pool Origin Data%  Move Log Cpy%Sync Convert
+  mariadb-snap mariadb swi-aos--- 20.00m      mydb     1.23                          
+  mydb         mariadb owi-aos---  3.00g                                             
+
+umount /tmp/snap
+mkdir /tmp/snap
+lvremove mariadb-snap mariadb
+systemctl stop mariadb.service
+rm -rf /var/lib/mysql/*
+tar xvaf mariadb.tar.xz
+rsync -avhP * /var/lib//mysql/
+systemctl stop mariadb
+systemctl start  mariadb
+
+ mysql -u root -p
+MariaDB [(none)]> use inventory
+MariaDB [inventory]> select * from product;            -- Tengo todos los datos (las 5 filas)
++----+-------------------+---------+-------+-------------+-----------------+
+| id | name              | price   | stock | id_category | id_manufacturer |
++----+-------------------+---------+-------+-------------+-----------------+
+|  1 | ThinkServer TS140 |  539.88 |    20 |           2 |               4 |
+|  2 | ThinkServer RD630 | 2379.14 |    20 |           2 |               4 |
+|  3 | RT-AC68U          |  219.99 |    10 |           1 |               3 |
+|  4 | X110 64GB         |   73.84 |   100 |           3 |               1 |
+|  5 | Z230Workstation   |     600 |    20 |           2 |               4 |
++----+-------------------+---------+-------+-------------+-----------------+
+
+
+
+
+
+Chapter 10.    Apache HTTPD  Web Service
+
+RedHat tiene la version Apache 2.4
+
+¿Que es APACHE?
+Es un webserver  que ofrece comunicaciones basadas en el protocolo HTTP 1.1
+
+¿Como funciona el lenguaje HTML?
+Usa el protocolo HTTP
+HTTPS utiliza ademas el protodolo TLS
+
+¿Como funciona el HTTP?
+Utiliza unos metodos para interactuar enntre CLIENTE  y SERVIDOR
+Metodos:
+GET  (99% de los usos)    -- Solicitamos un resource del server
+POST            -- Enviamos claves/valores al server
+PUT            -- Idem que el POST, pero envia flujos de datos
+DELETE            -- Para borrar resources del server
+HEAD            -- Modifica la cabecera
+OPTIONS        -- Modifica opciones dentro de la cabecera
+
+Es un protodolo NO-TRANSACCIONAL (no hay seguimiento de las conexiones)
+
+[root@server4 ~]# nc classroom 80
+GET /pub HTTP/1.1            -- Solicito el recurso /pub con protocolo  HTTP/1.1
+host: classroom                -- en la cabecera pongo el  host
+
+HTTP/1.1 301 Moved Permanently
+Date: Wed, 18 Mar 2015 11:34:31 GMT
+Server: Apache/2.4.6 (Red Hat)
+Location: http://classroom/pub/
+Content-Length: 229
+Content-Type: text/html; charset=iso-8859-1
+
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>301 Moved Permanently</title>
+</head><body>
+<h1>Moved Permanently</h1>
+<p>The document has moved <a href="http://classroom/pub/">here</a>.</p>
+</body></html>
+
+[root@server4 ~]# nc classroom 80
+GET /david HTTP/1.1                -- Este recurso (david) no existe
+host: classroom
+
+HTTP/1.1 404 Not Found
+Date: Wed, 18 Mar 2015 11:35:56 GMT
+Server: Apache/2.4.6 (Red Hat)
+Content-Length: 203
+Content-Type: text/html; charset=iso-8859-1
+
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>404 Not Found</title>
+</head><body>
+<h1>Not Found</h1>
+<p>The requested URL /david was not found on this server.</p>
+</body></html>
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CODIGOS DE RETORNO:
+200    =    OK
+300    =    La solicitud se ha procesado PERO con alguna modificacion de las cabeceras
+400    =    Codigos de ERROR, relaivo a recursos
+        400    Recurso no encontrado
+        401    User no autorizado
+        403    User no autenticado
+500    =    Errores del server
+
+
+SERVER APACHE
+
+Viene en el paquete web-server  (modulos seguridad, perl, etc..)
+Si solo queremos Apache =  httpd
+
+Servicio httpd:
+Tanto man como pinfo ==> son muy limitados
+httpd-manual : Es un paquete que podemos instalar (en /usr/share/doc/)
+    Y configura para que accediento a nuestro server:/manual  ==> veamo toda la info
+
+CONFIGURACION BASICA DE APACHE
+Fichero oconfiguracion  ==>   /etc/httpd/conf/httpd.conf
+Este fichero viene preparado ya
+
+Document root  =  /var/www/html/        -- Aqui esta el index.html   (o index.htm)
+
+SINTAXIS BASICA:
+Son pares de CLAVES=VALORES
+Listen    172.25.0.11:80                -- En que interfaz escucha APACHE
+Listen    80                -- Solo en IPv6! 
+Podemos poner BLOQUES DE VALORES:
+< [BLOCK]>
+. . . . . . 
+< /[BLOCK]>
+
+ServerRoot    "/etc/httpd"        -- Donde va a buscar Apache los fich de configuracion
+Include        "conf.modules        -- Añade al fich de confguracion otro fichero
+User                    -- Con que usuario linux
+Group                    -- Grupo linux
+ServerAdmin                -- mail del Admin del servidor web
+< Directory>            -- Directivas del Document Root
+    AllowOverride
+< /Directory>
+
+
+VIRTUAL HOST
+
+Ofrecen diferentes contenidos dentro del mismo servidor
+Parametro host
+Apache mira la cabecera de la URL y nos ofrece un contentido u otro
+
+ Bloques Virtualhost 
+
+Si no coincide con ningun VirtualHost ==> Se redirecciona al primero
+Podemos crear un 1er VIRTUAL HOST DUMMY , para informar de accesos incorrectos
+
+
+TLS :
+Se componen de 3 partes:
+Propietario
+Entidad CErtificadora CA
+Firmas con las CLAVES
+
+Un certficado es VALIDO cuando tiene
+Propietario
+firma
+
+Un certficado es de CONFIANZA cuando tenemos
+La CLAVE PUBLICA de la CA
+
+¿COMO CONFIGURAMOS  NUESTRO SERVER PARA QUE SEA DE CONFINANZA?
+Pues creando nuestro propio CERTIFICADO
+Luego debermos enviarloa la entidad certificadora
+
+
+Fuentes de ENTROPIA
+Aleatorias
+/dev/ramdom
+Tiene un almacen de datos aleatorio
+datos de E/S en discos, interactuacion del usuaro, etc...
+Si hacemos un cat /dev/random y movemos el raton vemos como va cambiando
+PseudoAleatoria;
+/dev/urandom
+Si hacemos un cat /dev/urandom
+
+
+CONFIGURING HTTPS
+
+listen    443  https    
+Si no ponemos nada==> escucha en IPv6
+    La clave privada siempre se deposita en el servidor
+SSLPassPhraseDialog    exec:/usr/libexec/https-ssl-pass-dialog    (script)
+SSLSessionCache    Permite almacenar durante un tiempo el pass-phrase  (cachea el passphrase)
+SSLSessionCacheTimeout
+SessionCache
+
+< VirtualHost   _default_ : 443 >
+SSLEngine    on
+SSLProtocol    all -SSLv2
+SSLCipherSuite
+    
+
+< /VirtualHost   >
+
+< VirtualHost   
+
+
+1-Ruta no accesible por los cliente
+2-Que sea accesible por apache
+3-Que apache tenga permisos de ejecucion
+
+Chapter 11. Writing  Bash  Scripts
+
+Shell-script : Es una programacion interpretada (no es un lenguaje)
+
+PASOS para crear un script:
+
+1) Saber QUÉ SHELL va a interpretar los comandos.
+#!     A ésto se la llama Shebang
+#!/bin/bash
+Si no le indico el shebang ==> puede que se ejecute con una shell independiente (sh)
+
+2) El script tiene que tener permisos de execution
+chmod  +x  script
+
+3) Tiene que estar incluido en un PATH ejecutable
+Variable PATH
+/bin    ---->     /usr/bin        -- Ahora en RHEL7 son links
+/sbin    ---->    /usr/sbin        -- Ahora en RHEL7 son links
+/usr/local/bin            -- Cualquier usuario del sistema
+/usr/local/sbin            -- Cualquier usuario del sistema con permisos de root
+~/bin                -- Solo para nuestro usuario
+
+-Para saber donde está un ejectuble:
+which  script
+
+CANALES
+Recordemos los canales de comunicacion kernel<==>usuario
+0    STDIN        TECLADO
+1    STDOUT        PANTALLA
+2    ERROR        PANTALLA
+
+>    Salida hacia el canal 1 
+>1    Salida hacia el canal 1 
+>2    Salida hacia el canal 1 
+
+Para redirigir un canal hacia otro canal:
+1>&2        Salida estandar hacia la salida de errores     ó
+>&2        Salida estandar hacia la salida de errores     
+2>&1        Salida de errores hacia la salida standard
+
+Ojo: Aqui no intervienen las PIPES
+
+
+
+CHARS ESPECIALES
+En nuestra shell bash, hay algunos chars que se interpretan diferentes.  Ejemplo:
+\    Back slash
+    El char que pongamos despues se pone literalmente
+
+#     almohadilla
+Es un comentario:  lo que se ponga a continuacion hasta el final de linea no se interpreta ni se displayan
+    Si ponemos \#  ==> mostrará la '#'
+    
+'    single quote
+    Todo los chars que pongamos dentro  los pone literalmente
+
+"    double quote
+    Inihibe la expasion de casi todos los chars especiales
+    Inhibe todos los chars especiales excepto :   $    \    !  `  "    ==> que SI los expande  (ojo aqui no está la comilla simple ' )
+    ! = Historial de comandos
+
+USING VARIABLES
+
+Por norma general, van en MAYUSCULAS
+Eso es para evitar que se confundan con funciones y comandos
+Empiezan por char alfabetico o  "_" (underscore)
+Cuando usemos las variables se recomiendan encerrarlas entre llaves { }
+
+
+EXPANSION DE COMANDOS
+
+Hay 2 formas de hacerlo: con la tilde inversa y con el dolar :
+`   
+$()
+
+Ejemplos:
+echo "Current time:  $(date)"
+Current time:  Mon Mar 23 11:05:23 CET 2015
+echo "Current time:  `date` "
+Current time:  Mon Mar 23 11:06:09 CET 2015
+
+
+
+
+EXPANSION DE OPERACIONES ARITMETICAS
+
+echo $[1+1]        -- Suma
+2
+echo $[2*4]        -- Multiplicar
+8
+echo $[2**4]        -- Exponencial
+16
+
+THROUBLESHOOTING SCRIPTING
+
+Idea =  Establecer un TRACE
+Se activa dentro del script (no de la shell)
+
+set  -x    ACTIVA el TRACE
+set  +x     DESACTIVA el TRACE
+Se pueden poner bloques de lineas y poner set +x y set +x entre medias
+
+set  -v    ACTIVA el modo VERBOSE
+set  +v    DESACTIVA el modo VERBOSE
+
+
+
+
+
+Chapter 13.  Conditional Structures and Control Structures
+
+
+ls /etc/passwd &>/dev/null && echo OK || echo Not found        -- Es un condicional basado en $?
+OK                                -- El & ==> Salida standar + salida error
+echo  $?
+0
+
+ls /etcas/passwd &>/dev/null && echo OK || echo Not found
+Not found
+echo  $?
+0
+
+(ls /etc/passwd &>/dev/null && (cp /etc/passwd /david || mkdir /david && cp /etc/passwd /david)) || echo ERROR
+cp: cannot create regular file ‘/david’: Permission denied
+mkdir: cannot create directory ‘/david’: Permission denied
+ERROR
+
+"copia el fichero passwd al directorio /david y si no existe lo creas, Si no puedes hacerlo pon ERROR"
+
+Comando test
+Lo ejecutamos de 3 maneras distintas:
+
+test condition
+[ condition ]
+[[ condition ]]
+
+[ 1 -eq 1 ];echo $?
+0
+
+127
+[ 1 -gt 1 ];echo $?
+1
+
+
+
+echo  $STRING |  tr  -d  ' '            -- Elimina blancos de un string
+
+EDITOR multiplataforma interesante:
+www.sublimetext.com/
+- Tiene muchos plugins interesantes
+- Tiene autocompletados de PYTON, PERL y BASH
+
+
+
+Chapter 13.  Configuring the Shell environment
+
+- Lo primero que se ejecuta es este fichero de SISTEMA:
+0.    /etc/profile        -- Fichero de VARIABLES genericas para TODO EL SISTEMA
+
+Cuando un usuario se loguea, se ejecutará en el $HOME del usuario y por este orden
+
+1.    .bash_profile
+2.    .bash_login
+3.    .profile
+- Solo deberiamos tener 1 de estos 3 ficheros.
+- Pero pueden llegar a ejecutarse los 3 ficheros, machacando lo que haga el ultimo
+
+man bash:
+     When  bash  is invoked as an interactive login shell, or as a non-interactive shell with the --login option, it first reads
+       and executes commands from the file /etc/profile, if that file exists.  After reading that file, it looks for  ~/.bash_pro‐
+       file,  ~/.bash_login,  and ~/.profile, in that order, and reads and executes commands from the first one that exists and is
+       readable.  The --noprofile option may be used when the shell is started to inhibit this behavior.
+
+
+source        Busca variables y funciones de un fichero, para cargarlas en el entorno
+        Tambien se puede poner un  "."    (punto)
+
+cat .bash_profile
+# .bash_profile
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+    . ~/.bashrc                -- 
+fi
+# User specific environment and startup programs
+PATH=$PATH:$HOME/.local/bin:$HOME/bin
+export PATH
+
+cat .bashrc
+# .bashrc
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+    . /etc/bashrc
+fi
+
+cat  /etc/bashrc
+# Uncomment the following line if you don't like systemctl's auto-paging feature:
+# export SYSTEMD_PAGER=
+ES MUY EXTENSO
+
+ cat /etc/profile.d/vixsh
+if [ -n "$BASH_VERSION" -o -n "$KSH_VERSION" -o -n "$ZSH_VERSION" ]; then
+  [ -x /usr/bin/id ] || return
+  ID=`/usr/bin/id -u`
+  [ -n "$ID" -a "$ID" -le 200 ] && return
+  # for bash and zsh, only if no alias is already set
+  alias vi >/dev/null 2>&1 || alias vi=vim
+fi
+
+
+ALIAS 
+
+- Los ALIAS no se heredan cuando ejecutamos SHELL hijas
+- Los ALIAS se suele guardar en /etc/profile.d/
+
+alias
+alias egrep='egrep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias grep='grep --color=auto'
+alias l.='ls -d .* --color=auto'
+alias ll='ls -l --color=auto'
+alias ls='ls --color=auto'
+alias vi='vim'
+alias which='alias | /usr/bin/which --tty-only --read-alias --show-dot --show-tilde'
+
+
+Formas de inhibir un ALIAS:
+1.    /bin/ls            --Ejecutando directamente con el PATH completo
+2.    \ls            --Escapando el comando
+
+FUNCTIONS
+
+Se pueden guardar en un fichero de configuracion generica para todos los usuarios
+
+cd /etc/init.d/
+ll
+-rw-r--r--. 1 root root 13430 Apr  2  2014 functions        -- Aqui estan las Funciones-SCRIPTS del sistema.
+
+declare -f        -- Muestra todos las FUNCIONES cargadas en nuestro entorno
+SALEN MUCHAS ...
+
+Estas funciones las puedo hacer de 3 TIPOS:
+
+1) Funciones GLOBALES para todo el SISTEMA
+    Ojo: Aqui solo puede tocar root.
+    /etc/profile.d/myfunction.sh
+
+2) Funciones propias de USUARIO:
+    $HOME/.bashrc
+
+3) Funciones SHARED de USUARIOS a otros USUARIOS.  Para grupos reducidos
+    /shared/sharedfuncions        (lo creamos)
+    Se le llama desde el bashrc o bien desde los scripts
+
+SINTAXIS DE UNA FUNCTION
+Hay 2 tipos
+1) Reducida
+Myfunction () {
+    ----
+    ----
+}
+
+2) Tipo postfix:
+function  Myfunction ()  {
+    ----
+    ----
+}
+
+PARA BORRAR UNA FUNCION:
+unset  -f  Myfuncion
+
+
+
+
+
+[root@server4 ~]# fdisk /dev/vdb <<EOF            -- Podemos meter todos los comandos de fdisk en 1 fichero.
+o
+n
+p
+1
+
++2G
+t
+83
+w
+EOF
+
+Welcome to fdisk (util-linux 2.23.2).
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+Device does not contain a recognized partition table
+Building a new DOS disklabel with disk identifier 0x10b7c48a.
+Command (m for help): Building a new DOS disklabel with disk identifier 0x5e013367.
+Command (m for help): Partition type:
+   p   primary (0 primary, 0 extended, 4 free)
+   e   extended
+Select (default p): Partition number (1-4, default 1): First sector (2048-20971519, default 2048): Using default value 2048
+Last sector, +sectors or +size{K,M,G} (2048-20971519, default 20971519): Partition 1 of type Linux and of size 2 GiB is set
+Command (m for help): Selected partition 1
+Hex code (type L to list all codes): Changed type of partition 'Linux' to 'Linux'
+Command (m for help): The partition table has been altered!
+Calling ioctl() to re-read partition table.
+Syncing disks.
+
+[root@server4 ~]# partprobe
+[root@server4 ~]# cat /proc/partitions
+major minor  #blocks  name
+
+ 253        0   10485760 vda
+ 253        1   10484142 vda1
+ 253       16   10485760 vdb
+ 253       17    2097152 vdb1
+
+[root@server4 ~]# cat > /tmp/file <<EOF
+> esto es una prueba
+> de meter lineas en un fcihero
+> sin hacer un vi
+> EOF
+[root@server4 ~]# cat /tmp/file
+esto es una prueba
+de meter lineas en un fcihero
+sin hacer un vi
+
+
+PODEMOS CIFRAR un SCRIPT
+cifrar_script.sh
+#!/bin/bash
+NAME=$1.crypt
+echo "eval \"\$(dd if=\$0 bs=1 skip=XX 2>/dev/null|gpg -d 2>/dev/null)\"; exit" > $1.crypt
+sed -i s:XX:$(stat -c%s $NAME): $NAME; gpg -c < $1 >> $NAME; chmod +x $NAME
+
+
+
+TEMA 14: CONTENEDORES Y DOCKER
+
+Un contenedor es un mecanismo ligero aislado  que permite al kernel correr grupos de procesos en el espacio de usuarios aislado,separado del host.
+Contenedores nos permiten crear pequeñas cajas de arena aisladas, así podremos tener pequeñas espacios de proceso aislados con la ventaja de ser ligeros ya que no se replica todo. No se replica lo común como es el hardware, kernel, sistema operativo y librerías genéricas. Duplicaremos las librerías que necesitemos y las aplicaciones.
+
+Ejemplo: Podremos tener la máquina host sin apache y un contenedor con apache funcionando. Tiene que haber compatibilidad entre el kernel de la maquina host y el container.
+
+Una de las limitaciones de los contenedores es que al compartir kernel no podremos por ejemplo tener un container con windows. Tendremos que mantener una compatibilidad entre el kernel de la máquina host y el container.
+El container no podrá acceder al árbol de directorios de la máquina hosts.
+
+Tecnología container
+
+El kernel proverá containers asilados. Los cuales crean
+
+Nombres usados por contenedores
+Nombre
+Proposito
+Mount
+Estará aislado el sistema de ficheros . Los containers tiene un / diferente,y también diferente que el host
+PID
+Cada contenedor tiene su propia tabla de procesos. Los procesos dentro del contenedor no podran fuera del contenedor. Todos los procesos son visibles desde el hosts.
+IPC
+Aislado la comunicación las fuentes de  interprocesos de comunicación (IPC).SystemV comparte memoria y las colas de  mensajes de POSIX. Dos contenedores no pueden interactuar con otros espacios de memoria.
+Network
+Se comparte via bridge la red del host. Se crean puentes.
+UTS
+Un hostname de un contenedor debe ser distinto del espacio de nombres que tenga el host.
+
+
+Control Groups:
+
+cgroups son usados por el kernel para gestionar los recursos del sistema. Mediante el uso de cgroups podremos gestionar los tiempos de CPU,memoria, y I/O bandwith .
+
+SELinux y contenedores:
+
+Debido a que los contenedores son menos seguros que las maquinas virtuales hay que evitar que se pueda saltar de un contenedor a otro. En el caso de tener etiquetas iguales se podria hacer esto. Para evitar saltar de un contenedor a otro usaremos SeLinux en modo enforcing, los procesos de los contenedores serán del tipo svirt_lxc_net_t e irán etiquetados como svirt_sandbox_file_t. Para evitar problemas de seguridad SeLinux usará Multi-Category Security (MCS). Cada contenedor correrá como svirt_lxc_net_t pero se asignará una aleatoria y única etiqueta  cuando arranque Docker.
+Si un proceso tiene la etiqueta SeLinux correcta pero no tiene categoría el acceso será denegado.
+DOCKER
+
+A la parte estática de dockers se le llama imagen, esta parte es la base y no es modificable.
+
+#yum info dockers
+#yum install docker
+
+Hay servidores de imagenes que se llaman registry.
+Descargamos la imagen
+#docker pull registry.access.redhat.com/redhat/rhel7
+Creamos el contenedor ahora que tenemos la imagenzººz
+#docker run -i -t --rm rhel7 cat /etc/hosts
+--rm para que borre el contenedor una vez parado.
+El contenedor se para cuando termina el comando.
+
+#docker ps => para ver los procesos de los contendores.
+
+[root@server5 yum.repos.d]# docker ps -a
+CONTAINER ID        IMAGE                                    COMMAND             CREATED             STATUS                     PORTS               NAMES
+1ccfa2f9135d        registry.access.redhat.com/rhel7:7.1-4   "cat /etc/hosts"    2 minutes ago       Exited (0) 2 minutes ago                       cranky_heisenberg   
+
+Si queremos borrar un contenedor usaremos docker rm (ID o nombre)
+
+Las imagenes se guardan en /var/ lib/docker dentro del host
+
+
+
+docker port >container>
+
+
