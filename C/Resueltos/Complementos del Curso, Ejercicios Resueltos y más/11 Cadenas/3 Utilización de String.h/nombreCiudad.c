@@ -7,7 +7,7 @@ struct usuario{
 	char apellido[20];
 	char	ciudad[40];
 	
-} usuarios[100];
+} usuarios;
 
 int main(){
 
