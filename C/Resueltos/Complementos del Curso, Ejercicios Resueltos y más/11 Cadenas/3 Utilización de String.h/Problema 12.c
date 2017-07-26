@@ -40,7 +40,7 @@ int main(){
 
     for(i=0; i<l; i++)
     {
-        printf("%s",nombre[i]);
+        printf("%s",nombre[i+1]);
         printf("\n");
     }
 
