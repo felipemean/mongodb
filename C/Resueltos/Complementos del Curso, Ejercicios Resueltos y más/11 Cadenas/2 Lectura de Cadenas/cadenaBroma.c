@@ -11,7 +11,7 @@ int main(){
 	
 	strcpy(cadena2, cadena);
 	
-	strcpy(cadena2+10, "Buena Broma");	
+	strcpy(cadena2+10, "  Buena Broma");	
 	
 		printf("%s ",cadena2);
 	
