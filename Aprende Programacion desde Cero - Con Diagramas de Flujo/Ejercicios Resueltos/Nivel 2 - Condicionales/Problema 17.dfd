@@ -1,0 +1,103 @@
+ Dfd (c)
+1
+1
+1
+0
+0
+6
+2
+6
+compra
+1
+0
+6
+numero
+9
+random(5)
+4
+1
+30
+'Digite el total de la compra'
+5
+1
+6
+compra
+7
+0
+1
+10
+numero = 1
+7
+0
+1
+10
+numero = 2
+7
+0
+1
+10
+numero = 3
+7
+0
+1
+10
+numero = 4
+4
+1
+28
+'Bolita Roja; COMPRA GRATIS'
+13
+6
+2
+9
+descuento
+10
+compra*0.5
+6
+precio
+18
+compra - descuento
+4
+1
+37
+'Bolita Azul; total a pagar: ',precio
+13
+13
+6
+2
+9
+descuento
+13
+compra * 0.25
+6
+precio
+18
+compra - descuento
+4
+1
+41
+'Bolita Amarilla; total a pagar: ',precio
+13
+13
+6
+2
+9
+descuento
+13
+compra * 0.10
+6
+precio
+18
+compra - descuento
+4
+1
+38
+'Bolita Verde; total a pagar: ',precio
+13
+13
+4
+1
+40
+'Bolita Blanca;  total a pagar: ',compra
+13
+1

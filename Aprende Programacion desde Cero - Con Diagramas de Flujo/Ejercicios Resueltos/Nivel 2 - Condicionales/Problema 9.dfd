@@ -1,0 +1,76 @@
+ Dfd (c)
+1
+1
+1
+0
+0
+6
+2
+13
+numeroCamisas
+1
+0
+12
+precioCamisa
+1
+0
+4
+1
+32
+'Digite el numero de Camisas:D '
+5
+1
+13
+numeroCamisas
+4
+1
+31
+'Digite el precio de la Camisa'
+5
+1
+12
+precioCamisa
+7
+0
+1
+18
+numeroCamisas >= 3
+6
+3
+12
+precioCompra
+28
+numeroCamisas * precioCamisa
+9
+descuento
+17
+precioCompra*0.10
+11
+precioFinal
+24
+precioCompra - descuento
+4
+1
+61
+'El total de compra con el 10% de descuento es: ',precioFinal
+13
+6
+3
+12
+precioCompra
+28
+numeroCamisas * precioCamisa
+9
+descuento
+17
+precioCompra*0.20
+11
+precioFinal
+24
+PrecioCompra - descuento
+4
+1
+59
+'El total a pagar con el 20% de descuento es. ',precioFinal
+13
+1

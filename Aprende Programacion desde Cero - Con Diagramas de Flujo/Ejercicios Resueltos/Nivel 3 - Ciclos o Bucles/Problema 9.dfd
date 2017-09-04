@@ -1,0 +1,59 @@
+ Dfd (c)
+1
+1
+1
+0
+0
+6
+3
+4
+fact
+1
+1
+4
+suma
+1
+0
+1
+n
+1
+0
+4
+1
+56
+'Digite el numero de terminos de la suma de factoriales'
+5
+1
+1
+n
+8
+1
+1
+i
+1
+1
+1
+1
+1
+n
+1
+1
+1
+6
+1
+4
+fact
+8
+fact * i
+6
+1
+4
+suma
+11
+suma + fact
+10
+4
+1
+19
+'La suma es: ',suma
+1

@@ -1,0 +1,62 @@
+ Dfd (c)
+1
+1
+2
+0
+0
+6
+2
+2
+n1
+1
+0
+2
+n2
+1
+0
+4
+1
+18
+'Digite 2 numeros'
+5
+1
+5
+n1,n2
+12
+1
+9
+divisible
+1
+5
+n1,n2
+1
+2
+1
+9
+divisible
+1
+5
+n1,n2
+0
+6
+1
+3
+div
+9
+n1 mod n2
+7
+0
+1
+7
+div = 0
+4
+1
+17
+'No es divisible'
+13
+4
+1
+39
+'El numero ',n1,' es divisible por ',n2
+13
+3

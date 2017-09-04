@@ -1,0 +1,76 @@
+ Dfd (c)
+1
+1
+1
+0
+0
+6
+3
+6
+numero
+1
+0
+4
+suma
+1
+0
+5
+suma1
+1
+0
+4
+1
+31
+'Digite el numero de elemtos: '
+5
+1
+6
+numero
+8
+1
+1
+i
+1
+1
+1
+1
+6
+numero
+1
+1
+1
+7
+0
+1
+11
+i mod 2 = 0
+6
+1
+4
+suma
+8
+suma + i
+13
+6
+2
+1
+n
+8
+i * (-1)
+6
+suma1 
+9
+suma1 + n
+13
+6
+1
+9
+sumaTotal
+12
+suma + suma1
+10
+4
+1
+24
+'La suma es: ',sumaTotal
+1

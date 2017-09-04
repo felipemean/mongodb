@@ -1,0 +1,52 @@
+ Dfd (c)
+1
+1
+1
+0
+0
+6
+1
+5
+horas
+1
+0
+4
+1
+29
+'Digite las horas trabajadas'
+5
+1
+5
+horas
+7
+0
+1
+9
+horas<=40
+6
+3
+10
+horasextra
+8
+horas-40
+4
+hora
+18
+horas - horasextra
+7
+salario
+27
+(hora*16) + (horasextra*20)
+13
+6
+1
+7
+salario
+8
+horas*16
+13
+4
+1
+25
+'El salario es: ',salario
+1

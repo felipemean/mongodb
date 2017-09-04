@@ -1,0 +1,48 @@
+ Dfd (c)
+1
+1
+1
+0
+0
+6
+1
+8
+nllantas
+1
+0
+4
+1
+44
+'Digite el numero de llantas que comprara: '
+5
+1
+8
+nllantas
+7
+0
+1
+13
+nllantas >= 5
+6
+1
+6
+precio
+12
+800*nllantas
+4
+1
+30
+'El total a pagar es: ',precio
+13
+6
+1
+6
+precio
+12
+700*nllantas
+4
+1
+30
+'El total a pagar es: ',precio
+13
+1

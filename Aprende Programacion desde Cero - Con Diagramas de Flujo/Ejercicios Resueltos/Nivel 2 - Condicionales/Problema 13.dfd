@@ -1,0 +1,76 @@
+ Dfd (c)
+1
+1
+1
+0
+0
+6
+3
+1
+A
+1
+0
+1
+B
+1
+0
+1
+C
+1
+0
+4
+1
+22
+'Digite el valor de A'
+5
+1
+1
+A
+4
+1
+22
+'Digite el valor de B'
+5
+1
+1
+B
+4
+1
+22
+'Digite el valor de C'
+5
+1
+1
+C
+6
+1
+1
+D
+16
+(B*B) - (4*A*C) 
+7
+0
+1
+3
+D>0
+4
+1
+37
+'la ecuacion no tiene solucion real '
+13
+6
+2
+4
+rpt1
+20
+(-B + sqrt(D))/(2*A)
+4
+rpt2
+20
+(-B - sqrt(D))/(2*A)
+4
+1
+56
+'La respuesta1 es: ',rpt1, ' y la respuesta 2 es: ',rpt2
+13
+1
