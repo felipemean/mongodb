@@ -1,0 +1,26 @@
+#include<stdio.h>
+
+ 
+
+int main(){
+	int n = 10 ,   *p_n = &n;
+	float n2 = 10.5, *p_n2 = &n2;
+	char n3 = 'F', *p_n3 = &n3;
+	
+	// posicion de memoria donde estan almacenados los datos
+	
+	printf("\n Variable Entera: ");
+		printf(" \nDato:  %i ", n);
+			printf("\n Posicion : %p", p_n ");
+	
+	printf("\n Variable Flotante: ");
+		printf(" \nDato:  %.2f ", n2);
+			printf("\n Posicion : %p", p_n2 ");
+	
+	printf("\n Variable Caracter: ");
+		printf(" \nDato:  %c ", n3);
+			printf("\n Posicion : %p", p_n3 ");
+	
+	
+	return 0;
+}

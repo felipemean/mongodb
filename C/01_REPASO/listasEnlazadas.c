@@ -12,10 +12,8 @@ enlace o puntero   p
 // una lista o un nodo: Se crea con un typedef struct (){}Nodo;
 
 typedef struct{
-
 	int dato;						//dato
 	struct Nodo *sgte;  			// Puntero, con una estrctuar anidada
-	
 }Nodo;
 
 // voy a crear dos variables , la 1º posicion del nodo (inicialmente NULL) y lo mismo para la última.
@@ -31,7 +29,7 @@ void agregar( Nodo *nodo){ // parametro de tipo nodo y agrego datos, Comprobar s
 		primer = nodo;			// ejmeplo parametro 5, si la lista esta vacia incluye el primer dato= 5
 		ultimo = nodo;      	// Significa que el último = primero, y le asigno el mismo parametro	
 	}else{       // La lista no está vacia al menos primer es != NULL
-		ultimo *sgte = nodo;   // Quiero agregar ,, ultmo tiene que apuntar a sgte
+		ultimo -> sgte = nodo;   // Quiero agregar ,, ultmo tiene que apuntar a sgte
 		ultimo = nodo;
 	}
 	

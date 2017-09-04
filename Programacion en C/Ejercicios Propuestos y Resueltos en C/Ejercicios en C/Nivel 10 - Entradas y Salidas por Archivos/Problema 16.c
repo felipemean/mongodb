@@ -29,7 +29,6 @@ void crear(){
 	
 	printf("\n\t.:Creando Directorio de contactos:.\n");
 	fprintf(fd,"\t.:Directorio Telefonico\n");
-	
 	do{
 		fflush(stdin);
 		printf("\nNombre: ");gets(datos.nombre);
@@ -45,6 +44,7 @@ void crear(){
 		printf("Desea agregar mas contactos(s): ");
 		scanf("%c",&rpt);
 	}while(rpt == 's');
+	
 }
 
 void agregar(){
