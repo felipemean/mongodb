@@ -1,0 +1,57 @@
+ Dfd (c)
+1
+1
+1
+0
+0
+6
+2
+2
+n1
+1
+0
+2
+n2
+1
+0
+4
+1
+27
+'Digite el primer numero: '
+5
+1
+2
+n1
+4
+1
+28
+'Digite el segundo numero: '
+5
+1
+2
+n2
+6
+3
+4
+suma
+5
+n1+n2
+5
+resta
+5
+n1-n2
+4
+mult
+5
+n1*n2
+6
+1
+3
+div
+5
+n1/n2
+4
+1
+103
+'La suma es: ',suma,' ; La resta es: ',resta,' ; La multiplicacion es: ',mult,' ; La division es: ',div
+1

@@ -1,0 +1,103 @@
+ Dfd (c)
+1
+1
+1
+0
+0
+6
+3
+12
+arreglo (5) 
+1
+0
+4
+suma
+1
+0
+5
+resta
+1
+0
+6
+2
+4
+mult
+1
+1
+3
+div
+1
+1
+8
+1
+1
+i
+1
+1
+1
+1
+1
+5
+1
+1
+1
+4
+1
+19
+'Ingrese un numero'
+5
+1
+11
+arreglo (i)
+10
+8
+1
+1
+i
+1
+1
+1
+1
+1
+5
+1
+1
+1
+6
+3
+4
+suma
+18
+suma + arreglo (i)
+5
+resta
+19
+resta - arreglo (i)
+4
+mult
+18
+mult * arreglo (i)
+6
+1
+3
+div
+17
+div / arreglo (i)
+10
+4
+1
+19
+'La suma es: ',suma
+4
+1
+21
+'La resta es: ',resta
+4
+1
+29
+'La multiplicacion es: ',mult
+4
+1
+22
+'La division es: ',div
+1

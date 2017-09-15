@@ -1,0 +1,62 @@
+ Dfd (c)
+1
+1
+1
+0
+0
+6
+2
+2
+n1
+1
+0
+2
+n2
+1
+0
+4
+1
+18
+'Digite 2 numeros'
+5
+1
+5
+n1,n2
+7
+0
+1
+33
+(n1 mod 2 = 0) and (n2 mod 2 = 0)
+7
+0
+1
+12
+n1 mod 2 = 0
+7
+0
+1
+12
+n2 mod 2 = 0
+4
+1
+27
+'Ambos numeros son impares'
+13
+4
+1
+23
+'Solo el ',n2,' es par'
+13
+13
+4
+1
+30
+'Solo el numero ',n1,' es par'
+13
+13
+4
+1
+25
+'Ambos numeros son pares'
+13
+1

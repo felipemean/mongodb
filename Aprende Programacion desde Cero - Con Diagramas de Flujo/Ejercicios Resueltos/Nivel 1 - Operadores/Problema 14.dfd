@@ -1,0 +1,43 @@
+ Dfd (c)
+1
+1
+1
+0
+0
+6
+3
+6
+arista
+1
+0
+4
+area
+1
+0
+7
+volumen
+1
+0
+4
+1
+41
+'Digite el valor de la arista del cubo: '
+5
+1
+6
+arista
+6
+2
+7
+volumen
+8
+arista^3
+5
+area 
+14
+6 * (arista^2)
+4
+1
+68
+'El valor del ares es: ',area,' y el valor del volumen es: ',volumen
+1

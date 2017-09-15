@@ -1,0 +1,35 @@
+ Dfd (c)
+1
+1
+1
+0
+0
+6
+1
+7
+salario
+1
+0
+4
+1
+22
+'Digite el salario:D '
+5
+1
+7
+salario
+6
+2
+7
+aumento
+12
+salario*0.25
+12
+salarioFinal
+15
+salario+aumento
+4
+1
+58
+'Su salario Final con el 25% de aumento es: ',salarioFinal
+1

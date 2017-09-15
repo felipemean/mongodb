@@ -1,0 +1,71 @@
+ Dfd (c)
+1
+1
+1
+0
+0
+6
+3
+6
+nombre
+2
+''
+4
+edad
+1
+0
+4
+sexo
+2
+''
+4
+1
+21
+'Ingrese su nombre: '
+5
+1
+6
+nombre
+4
+1
+19
+'Ingrese su edad: '
+5
+1
+4
+edad
+4
+1
+19
+'Ingrese su sexo: '
+5
+1
+4
+sexo
+7
+0
+1
+8
+edad>=18
+4
+1
+30
+'No cumple con los requisitos'
+13
+7
+0
+1
+16
+sexo='masculino'
+4
+1
+30
+'No cumple con los requisitos'
+13
+4
+1
+23
+'El nombre es: ',nombre
+13
+13
+1

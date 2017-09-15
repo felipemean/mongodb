@@ -1,0 +1,46 @@
+ Dfd (c)
+1
+1
+1
+0
+0
+6
+1
+6
+compra
+1
+0
+4
+1
+43
+'Digite la el total de dinero en la compra'
+5
+1
+6
+compra
+7
+0
+1
+13
+compra > 1000
+4
+1
+33
+'El total a pagar es de: ',compra
+13
+6
+2
+9
+descuento
+10
+compra*0.2
+7
+precio 
+16
+compra-descuento
+4
+1
+33
+'El total a pagar es de: ',precio
+13
+1

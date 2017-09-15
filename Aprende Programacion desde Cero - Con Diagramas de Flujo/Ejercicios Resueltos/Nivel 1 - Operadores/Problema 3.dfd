@@ -1,0 +1,43 @@
+ Dfd (c)
+1
+1
+1
+0
+0
+6
+2
+2
+c1
+1
+0
+2
+c2
+1
+0
+4
+1
+31
+'Digite el valor del cateto1: '
+5
+1
+2
+c1
+4
+1
+38
+'Digite el valor del segundo cateto: '
+5
+1
+2
+c2
+6
+1
+4
+hipo
+21
+sqrt((c1)^2 + (c2)^2)
+4
+1
+62
+'El valor de la hipotenusa del triangulo rectangulo es: ',hipo
+1

@@ -16,7 +16,7 @@ struct datosPersona{
 }datos;
 
 int main(){
-	char direccion[] = "D:\\prueba\\emails.txt";
+	char direccion[] = "D:\\prueba\\emailes.txt";
 	char rpt;
 	fd = fopen(direccion,"wt");
 	

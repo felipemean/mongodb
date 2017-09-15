@@ -1,0 +1,93 @@
+ Dfd (c)
+1
+1
+2
+0
+0
+6
+2
+7
+numero1
+1
+0
+7
+numero2
+1
+0
+4
+1
+18
+'Digite 2 numeros'
+5
+1
+15
+numero1,numero2
+12
+1
+11
+operaciones
+1
+15
+numero1,numero2
+1
+2
+1
+11
+operaciones
+1
+17
+numero1, numero2 
+0
+6
+3
+4
+suma
+1
+0
+5
+resta
+1
+0
+3
+div
+1
+0
+6
+2
+4
+mult
+1
+0
+5
+resto
+1
+0
+6
+3
+4
+suma
+17
+numero1 + numero2
+5
+resta
+17
+numero1 - numero2
+4
+mult
+17
+numero1 * numero2
+6
+2
+3
+div
+17
+numero1 / numero2
+5
+resto
+19
+numero1 mod numero2
+4
+1
+124
+'La suma es: ',suma,'; La resta es: ',resta,'; La multiplicacion es: ',mult,'; La division es: ',div,'; El resto es: ',resto
+3

@@ -1,0 +1,110 @@
+ Dfd (c)
+1
+1
+1
+0
+0
+6
+2
+5
+marca
+2
+''
+6
+precio
+1
+0
+4
+1
+30
+'Digite el precio de la moto '
+5
+1
+6
+precio
+4
+1
+28
+'Digite la marca de la moto'
+5
+1
+5
+marca
+7
+0
+1
+15
+marca = 'honda'
+7
+0
+1
+16
+marca = 'yamaha'
+7
+0
+1
+16
+marca = 'suzuki'
+6
+2
+9
+descuento
+12
+precio*2/100
+11
+preciofinal
+16
+precio-descuento
+4
+1
+46
+'Descuento del 2%; precio final: ',preciofinal
+13
+6
+2
+9
+descuento
+13
+precio*10/100
+11
+preciofinal
+16
+precio-descuento
+4
+1
+47
+'Descuento del 10%; precio final: ',preciofinal
+13
+13
+6
+2
+9
+descuento
+12
+precio*8/100
+11
+preciofinal
+16
+precio-descuento
+4
+1
+46
+'Descuento del 8%; precio final: ',preciofinal
+13
+13
+6
+2
+9
+descuento
+12
+precio*5/100
+11
+preciofinal
+16
+precio-descuento
+4
+1
+47
+'Descuento del 5% ; precio final: ',preciofinal
+13
+1

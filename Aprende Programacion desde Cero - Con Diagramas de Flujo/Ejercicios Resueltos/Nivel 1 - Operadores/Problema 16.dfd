@@ -1,0 +1,43 @@
+ Dfd (c)
+1
+1
+1
+0
+0
+6
+3
+5
+radio
+1
+0
+4
+area
+1
+0
+7
+volumen
+1
+0
+4
+1
+27
+'Digite el valor del radio'
+5
+1
+5
+radio
+6
+2
+4
+area
+14
+4*3.1416*radio
+7
+volumen
+22
+(4/3)*3.1416*(radio^3)
+4
+1
+47
+'El area es: ',area,'; el volumen es: ',volumen
+1
