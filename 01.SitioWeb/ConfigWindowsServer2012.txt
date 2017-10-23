@@ -1,0 +1,11 @@
+Windows Server:  Controlamos todo lo conectgado a una RED:
+	orientado a la red de comunicacion de ordenadores:
+		Crea DHCP:  Clientes de forma automatica
+			Desplegar sistemas operativos
+				Active Directory
+	Servicios DNS:
+				Enrutamientos.
+				Soporte de HW importante.
+
+				WINDOWS + R abre ventana ejecutar comandos:
+Compartir conf RED:  ncpa.cpl
