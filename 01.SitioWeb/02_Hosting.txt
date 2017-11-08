@@ -30,5 +30,14 @@ Donde Adquirir un HOSTING?	hosting web , buscar en google + de 160.000  hay much
 	https://x10hosting.com/
 	http://webfreehosting.net/
 
-HOSTING DEDICADO o COMPARTIDO
+HOSTING DEDICADO o COMPARTIDO:
+	HostGator
+	es.goDaddy.com
+
+Comparacion de HOSTING:
+	
+	
+	search-ms:displayname=Resultados%20de%20la%20búsqueda%20en%20Google%20Drive&crumb=System.Generic.String%3Arenta&crumb=location:C%3A%5CUsers%5Cusuario%5CGoogle%20Drive\RENTA 2013
+	
+	search-ms:displayname=Resultados%20de%20la%20búsqueda%20en%20Google%20Drive&crumb=System.Generic.String%3Arenta&crumb=location:C%3A%5CUsers%5Cusuario%5CGoogle%20Drive\RENTA 2013
 	

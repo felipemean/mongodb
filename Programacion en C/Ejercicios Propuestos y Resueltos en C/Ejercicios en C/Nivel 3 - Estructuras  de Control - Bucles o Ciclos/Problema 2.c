@@ -6,6 +6,7 @@ sino, súmelos (Propuesto)*/
 int main(){
 	int numero,suma, mult,i;
 	
+	
 	printf("Digite un numero: ");scanf("%i",&numero);
 		
 	i = 1;

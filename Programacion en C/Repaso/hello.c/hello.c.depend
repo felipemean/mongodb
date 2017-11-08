@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1509551482 source:c:\documents and settings\usuario\documents\mongodb\programacion en c\repaso\hello.c\main.c
+	<stdio.h>
+	<conio.h>
+
+1509551549 source:c:\documents and settings\usuario\documents\mongodb\programacion en c\repaso\hello.c\putsprintf.c
+	<stdio.h>
+
+1509551750 source:c:\documents and settings\usuario\documents\mongodb\programacion en c\repaso\putsprintf.c
+	<stdio.h>
+

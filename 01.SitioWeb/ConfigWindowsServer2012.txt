@@ -9,3 +9,5 @@ Windows Server:  Controlamos todo lo conectgado a una RED:
 
 				WINDOWS + R abre ventana ejecutar comandos:
 Compartir conf RED:  ncpa.cpl
+
+	Primer Server dc01-ECB
