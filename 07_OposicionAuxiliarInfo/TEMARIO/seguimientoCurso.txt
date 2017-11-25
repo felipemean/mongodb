@@ -1,0 +1,6 @@
+Octubre noviembre: 
+BI: 	T1,2,3
+BII: 	T4 y 5
+BIII: 	T1,2,6
+BIV:	T1,2,6
+..................

@@ -1,2 +1,0 @@
-Las partes estaticas de un sistema se representan utilizando los diagramas de
-Clases, objetos, componentes y casos de uso
