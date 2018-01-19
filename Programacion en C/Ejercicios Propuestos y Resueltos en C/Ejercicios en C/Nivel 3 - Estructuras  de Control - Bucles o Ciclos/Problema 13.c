@@ -5,7 +5,7 @@ hasta n, y diga cuantos números hay.*/
 
 int main(){
 	int cont=0,i,suma=0,n;
-	
+	system("color 4F");
 	printf("Digite la cantidad de elementos: ");
 	scanf("%i",&n);
 	
@@ -17,7 +17,7 @@ int main(){
 	}
 	
 	printf("\n La suma es: %i",suma);
-	printf("\n La cantidad de numeros es: %i",cont);
+	printf("\n La cantidad de numeros pares es: %i",cont);
 	
 	
 	

@@ -1,0 +1,461 @@
+Historia de Perl
+Como primer tema de ésta parte vamos a ver un poco de los inicios de Perl, no va a ser muy extenso pues es algo trivial; simplemente para entender un poco sus comienzos. Puede parecer complejo, pero confía en nosotros, cuando entiendas lo básico no es diferente a aprender juegos de poker o cómo conducir un coche - lo que se refiere a la práctica, y un alto nivel de pensamiento lógico.
+
+Muy bien, antes que nada el lenguaje se llama Perl, solamente la primera P se pone en capitulares. Tradicionalmente el programa que ejecuta los scripts de Perl se llama perl, todo en minúsculas. Esto nos servirá para más adelante diferenciar entre el lenguaje y el programa.
+
+El lenguaje Perl toma su nombre de Practical Extraction and Report Language y fue ideado por Larry Wall. La primera versión sale en el año de 1987.
+
+Originalmente Larry Wall lo describe como un excelente lenguaje optimizado para leer archivos de texto, extraer información de esos archivos y crear reportes basados en esa información, combinando lo mejor de C, sed, awk y sh. Para los que conocen alguno de los lenguajes y herramientas antes mencionados, se podrán dar cuenta que la sintáxis del lenguaje es muy similar y no tendrán mucho problema en adoptarlo.
+
+Perl se considera un lenguaje interpretado, es decir, no es necesaria una previa compilación para poder ejecutarse, lo único que se necesita es darle al interprete, perl, el código que queremos que ejecute.
+
+Desde sus inicios Perl ha avanzado mucho y ahora se encuentra en la versión 5 con la versión 6 en pleno desarrollo.
+
+Cabe mencionar que Perl hoy en día es usado para una gran variedad de cosas, desde avanzados programas de seguridad hasta sencillos CGIs para administrar formularios. Uno de los fuertes de Perl es la existencia de CPAN, un directorio de módulos que podemos integrar a nuestros scripts para facilitarnos la vida.
+
+CPAN es definitivamente uno de los íconos representativos de Perl, otros lenguajes (proyectos) han querido implementar algo similar, pero han fallado. Perl lleva a CPAN desde su nacimiento. La filosofía comunitaria de Perl ha hecho de CPAN lo que es ahora, es el centro de distribución comunitario de paquetes que ningún otro lenguaje ha tenido. Sin duda, CPAN representa todo el trabajo que la comunidad de Perl ofrece, y que a su vez, es una excelente manera de contribuir con algo.
+
+LAS VARIABLES
+Éste es nuestro primer tema, y en él vamos a hablar de la pieza fundamental de cualquier lenguaje de programación: las variables.
+
+¿Qué es una variable?
+
+Una variable como bien dice su nombre es algo que puede "variar". Al nosotros hacer un script no tenemos manera de saber toda la información que vamos a tener, ya sean resultados de sumas, entradas de datos, etc. Para ello usamos las variables, para almacenar todos esos datos.
+
+En Perl hay varios tipos de variables, y les vamos a hechar un vistazo a las mismas:
+
+Las Escalares ($variable)
+
+En Perl la variable básica es la escalar. Ésta variable puede contener cualquier tipo de información ya sean números, letras, cadenas de texto, signos, código ASCII, etc, así como cosas más avanzadas como referencias que veremos más adelante.
+
+Para definir una variable escalar todo lo que tenemos que hacer es:
+
+$variable
+El símbolo $ se usa para identificar a nuestra variable, y después podemos usar el nombre que queramos. Para nombrar nuestras variables debemos de seguir algunas de reglas:
+
+Nuestras variables únicamente pueden nombrarse con valores alfanúmericos.
+ 
+El nombre de nuestras variables son sensibles al uso de mayúsculas y minúsculas, esto significa que las variables $variable y $Variable son dos variables distintas.
+ 
+Las variables NO puden comenzar con números, solamente letras o _, ya después se puede usar cualquier cáracter alfanúmerico
+ 
+Al definir nuestra variables es buen hábito usar el keyword "my"
+ 
+Muy bien, ahora veamos como podemos definir una variable e iniciarla con un valor:
+my $numero = 10;
+También podemos definirla primero, y después inicializarla:
+
+    my $numero;
+    $numero = 10;
+En ambos casos nuestra variable terminará con el valor "10".
+Podemos asignar el valor de una variable a otra, por ejemplo:
+
+1
+2
+3
+4
+5
+6
+7
+    my $variableA = "Mi Variable";
+ 
+    my $variableB = $variableA;
+ 
+    my $variableC;
+ 
+    $variableC = $variableA;
+En la línea 1 definimos e inicializamos la variable $variableA con el valor "Mi Variable".
+Luego en la línea 3 definimos e inicializamos la variable $variableB con el valor de $variableA, de ésta manera ambas variable tendrán el mismo valor.
+Y en las líneas 5 y 7, definimos la variable, e inicializamos la variable en dos pasos distintos.
+En este momento podremos ver que cada línea de código de Perl debe de acabar con un ;
+
+Los Arrays (@array)
+
+Los arrays o arreglos como se les llama comúnmente en español no son exactamente vectores, más que nada se les puede definir como una lista de cosas, éstas cosas pueden ser números, letras, palabras o hasta variables. Este tipo de variable es un punto sumamente fuerte de Perl y que te verás usando más de una vez en tus scripts. Nuestro array se define de la siguiente manera:
+
+my @array;
+Vemos que debemos de usar el símbolo @ para definir nuestros arrays.
+Como los arrays son listas de cosas, es diferente la manera en que los inicializamos:
+
+my @array = ('Perro','Gato','Gallina','Pez');
+Aquí definimos e inicializamos nuestra variable, para definir la lista con la que queremos inicializar a nuestro array, ponemos todos los elementos de la lista entre paréntesis y separando cada elemento por una coma. Aquí como cada elemento de la lista es una cadena de texto, por eso los ponemos entre comillas sencillas, aunque también podrían ser comillas dobles.
+La separación es por comas, así que no importa la cantidad de espacios que haya entre cada elemento, a continuación pongo un ejemplo:
+
+1
+2
+3
+4
+5
+6
+    my @array = (
+                 'Perro',
+                 'Gato',
+                 'Gallina',
+                 'Pez'
+                );
+Ya que tenemos una lista de "cosas" cargadas dentro de nuestro array, ahora debemos de poder tomar alguno de estos elementos. A cada elemento dentro de nuestra lista le corresponde un número, basado en su posición dentro de la lista, lo hay que tener en mente, es que Perl empieza a contar los elementos desde 0 NO desde 1.
+Por lo que en nuestro array con la lista de animales, el elemento 0 sería "Perro" y el elemento 1 sería "Gato", así sucesivamente.
+
+Para tomar algún elemento de nuestra lista debemos de usar la siguiente sintáxis:
+
+$array[<num_elemento>];
+En donde <num_elemento> es un número que corresponde al elemento que queremos tomar, veamos un ejemplo
+1
+2
+3
+my @array = ('Perro','Gato','Gallina','Pez');
+ 
+my $animal = $array[3];
+En la línea 1 definimos e inicializamos nuestro array, en la línea 3 asignamos el elemento 3 de nuestro array a la variable $animal.
+¿Sabes cuál será el valor de nuestra variable $animal?
+
+Si pensaste "Pez" estás en lo correcto.
+
+Los hashes (%hash)
+
+La variable hash o arreglo asociativo es un tipo de variable sumamente especial en Perl, ya que pocos lenguajes cuentan con variables de este tipo. El hash es un tipo de lista por medio de la cual podemos llamar a sus valores con el uso de llaves. Así dependiendo de la llave que se llame será el valor que se retorne.
+
+Entenderemos esto más a fondo ahora que veamos unos ejemplos.
+
+El hash se define de la siguiente manera:
+
+my %hash;
+Vemos que el símbolo para diferenciar a las variables de tipo hash es el símbolo %. Ahora, como se explicó nuestro hash es una lista que corresponden a llaves y valores, los hashes los podemos inicializar de dos maneras distintas:
+my %hash = ('Uno','One','Dos','Two','Tres','Three');
+Parece similar a una array pero hay una gran diferencia, pues realmente lo que ve Perl es lo siguiente:
+1
+2
+3
+    Uno  => One
+    Dos  => Two
+    Tres => Three
+Va tomando de dos en dos los elementos, el primer elemento de cada par lo toma como llave, y el segundo elemento como su valor. ¿Por qué se dicen "llaves"? Es debido a que funciona como una llave real, con una llave solamente podemos abrir una puerta, de ésta manera con una llave solamente podremos adquirir un valor.
+Para llamar el valor de una de nuestras llaves la sintáxis es:
+
+$hash{<nombre_llave>};
+En donde es el nombre de la llave de la cual queremos el valor. Entonces, tomando el hash que tenemos de ejemplo, podemos adquirir el valor de la llave Uno de la siguiente manera:
+$hash{'Uno'};
+Expliqué que hay dos maneras de inicializar nuestros hashes, y ahora les voy a mostrar la segunda manera. Ésta sintáxis en lo personal me parece mucho más clara, y les recomiendo que la usen:
+1
+2
+3
+4
+5
+6
+     my %Animales = (
+                 'Perro'   => 'Dog',
+                 'Gato'    => 'Cat',
+                 'Gallina' => 'Chicken',
+                 'Pez'     => 'Fish'
+                 );
+Vemos como cada par llave-valor es separado por comas, ahora, dentro del par llave-valor se usa la siguiente sintáxis:
+<LLAVE>   => <VALOR>
+En dónde <LLAVE> es el nombre de la llave, y <VALOR> el valor de la misma. Entonces siguiendo con éste hash de ejemplo, dígamos que queremos saber como se dice "Gallina" en inglés, podríamos entonces hacer lo siguiente:
+my $gallina_ingles = $Animales{'Gallina'};
+Al pedir el valor de la llave "Gallina" nos dá como resultado "Chicken".
+Ahora, que pasa si hacemos lo siguiente:
+
+my $variable = $Animales{'Pez'};
+¿Cuál será el valor de $variable?
+Si pensaste en "Fish" estás en lo correcto.
+
+Muy bien, ¿por qué cuando llamamos a los valores de nuestro array o hash usamos el símbolo $ en vez del @ ó %?
+
+La razón de esto es que si podemos ver bien, los arrays y los hashes almacenan variables escalares, entendemos como variable escalar todo aquello que sea un número, una cáracter, una cadena de texto, etc. Entonces cuando pedimos algún elemento de nuestro hash o array, estamos pidiendo un valor escalar, es por ello que usamos el
+
+$array[<elemento>]
+$hash{<llave>};
+Muy bien, ahora voy a enlistar los tipos de variables que faltan. Éstas variables no se van a explicar, pues para entenderlas tendríamos que ver temas más avanzados que se verán en el futuro.
+Los FILEHANDLES
+
+Con este tipo de variable podemos hacer llamadas a archivos desde Perl. Éstas variables las conoceremos en el tutorial intermedio cuando aprendamos a leer y manipular archivos.
+
+Los DIRHANDLES
+
+Ésta variable se usa cuando hacemos lectura de un directorio, de igual manera lo veremos hasta el tutorial intermedio.
+
+Los Typeglobs
+
+Un typeglob es una entrada a la tabla de símbolos de Perl, por lo que con un typeglob podemos llamar a todos los tipos de variables de Perl.
+
+OPERADORES DE PERL
+Los operadores son instrucciones que se le da a la computadora para efectuar sobre operandos. Los operandos pueden ser desde números hasta palabras.
+
+Perl es uno de los lenguajes que existen con más operadores, y aquí vamos a enlistar todos los que tiene. Podrás ver que los operadores son bastante intuitivos, antes de que se dé la explicación podrás saber la función que realiza el operador.
+
+Operadores Aritméticos
+
+Son los operadores más comúnes e incluyen suma, resta, multiplicación, exponenciación, división y módulo.
+
+    op1 + op2   Suma
+    op1 - op2   Resta
+    op1 * op2   Multiplicación
+    op1 ** op2  Exponenciación
+    op1 / op2   División
+    op1 % op2   Módulo
+Todos los operadores aritméticos son bastante intuitivos y no vale la pena profundizar sobre ello, quizá solamente destacar que el operador de módulo retornará el residuo de un división. Por ejemplo en la operación 9%7 el resultado será 2, ya que 9/7 es igual a 1 con residuo de 2.
+Veamos unos ejemplos prácticos del uso de estos operadores:
+
+1
+2
+3
+4
+5
+6
+    my $a = 10;
+    my $b = 15;
+ 
+    my $c = $b - $a;  #$c tiene valor de 5
+ 
+    my $d = $a * $b;
+Dentro del ejemplo, podrán ver que en la línea 3 hay un texto que viene en verde. Simplemente les comento que eso es un comentario.
+Un comentario es un texto al cual perl no le dá importancia y lo ignora por completo. Todos los comentarios de Perl inician con el símbolo de número o gato #.
+
+Operadores Aritméticos Unitarios
+
+Los operadores unitarios actúan sobre un solo operando y básicamente se usan para cambiar el signo de un valor, incrementar el valor o disminuir el valor.
+
+    +op1  Convierte el operando a positivo
+    -op1  Convierte el operando en negativo
+ 
+    ++op1 Pre-incremento del operando en uno
+    --op  Pre-disminución del operando en uno
+ 
+    op1++ Post-incremento del operando en uno
+    op1-- Post-decremento del operando en uno
+Si vemos la tabla podremos apreciar que hay pre-operaciones y post-operaciones, ambas realizan los mismo, incrementar o disminuir en una unidad el valor del operando, sin embargo el momento en que lo realizan es diferente.
+Las pre-operaciones primero cambian el valor del operando y después lo retornan, por ejemplo:
+
+1
+2
+3
+    my $var = 10;
+ 
+    my $var1 = $var++;
+En éste caso al terminar de ejecutar tendremos a $var con un valor de 11 y a $var1 con un valor de 10. Esto es porque debido a que usamos el post-incremento, primero se asigna el valor a $var1 y después se realiza el incremento de $var.
+Si usaramos el pre-incremento, ambas variables terminarían con lo mismo valor.
+
+Operadores Lógicos
+
+Los operadores lógicos normalmente los vamos a usar siempre que querramos controlar el flujo de nuestro programa, más adelante que veamos los Enunciados de Control veremos como.
+
+1
+2
+3
+    op1 && op2   Operación AND
+    op1 || op2   Operación OR
+    !op1         Operación NOT
+En sí es sencillo comprender que es un operador lógico, el programa va a realizar una desición en base a dos operandos cuya condición puede retornar verdadero o falso.
+Si en algún momento hemos tomado la materia de lógica en la escuela se nos será muy fácil comprender estos operadores. A continuación viene una tabla de resultados de los operadores, en la prímera columna viene el valor del operando1, en la segunda columna del operando2, y en la tercera y última columna el resultado en Verdadero o Falso.
+
+   RESULTADO &&
+    OP1     OP2     OP1 && OP2
+    0       0       0
+    1       0       0
+    0       1       0
+    1       1       1
+ 
+ 
+   RESULTADO ||
+    OP1     OP2     OP1 || OP2
+    0       0       0
+    1       0       1
+    0       1       1
+    1       1       1
+ 
+ 
+   RESULTADO !
+    OP1     !OP1
+    0       1
+    1       0
+Operadores a Nível bit
+A continuación viene el listado de cada operador junto con su breve descripción. Cabe destactar que estos operadores solamente funcionan con BITS.
+
+op1 & op2
+Este operador AND compara dos bits y retorna un resultado de 1 si ambos bits son 1, de lo contrario regresa 0.
+
+op1 | op2
+El operador OR compara dos bits y retorna un resultado de 1 si los bits son complementarios, de lo contrario regresa 0. op1 ^ op2
+El operador OR EXCLUSIVO compara dos bits y retorna un resultado de 1 si alguno o ambos bits son 1, de lo contrario retorna 0.
+
+-op1 
+Este operador se usa para invertir todos los bits del operando. op1 >> op2 
+El operador de DESPLAZAMIENTO A LA DERECHA mueve todos los bits a la derecha, se deshace del bit de la extrema derecha y asigna 0 al bit de la extrema izquierda, esto hace que cada movimiento divida a op1 a la mitad.
+
+op1 << op2
+El operador de DESPLAZAMIENTO A LA IZQUIERDA mueve todos los bits a la izquierda, se deshace del bit de la extrema izquierda y asigna 0 al bit de la extrema derecha, esto hace que cada movimiento multiplique a op1 en 2.
+
+Operadores Relacionales Numéricos
+
+Estos operadores se usan para verificar la relación que hay entre dos operadores númericos. Ya sea igualdad, mayor o menor, etc op1 == op2 
+Este operador retornará verdadero si ambos operadores son verdaderos. Por ejemplo, lo siguiente es verdadero: 7 == 7
+
+op1 != op2 
+La contraparte del operador anterior, esto regresará verdadero si los operadores no son iguales. Por ejemplo, lo siguiente retornará verdadero: 6 != 7
+
+op1 < op2 
+El operador retornará verdadero si op1 es menor a op2. Por ejemplo 2 < 6 es verdadero.
+
+op1 <= op2
+El operador retornará verdadero si op1 es menor o igual a op2. Por ejemplo 4 <= 4 y 4 <= 5 son verdaderos.
+
+op1 > op2 El operador retornará verdadero si op1 es mayor a op2. Por ejemplo 6 > 5 es verdadero.
+
+op1 >= op2 
+El operador retornará verdadero si op1 es mayor o igual a op2. Por ejemplo 8 >= 8 y 8 >= 4 son verdaderos.
+
+op1 <==> op2 
+Este operador es algo diferente pues en vez de dos posible retornos, tiene 3. El operador retorna 1 si op1 es mayor a op2, 0 si op1 es igual a op2, y -1 si op1 es menor a op2.
+
+Operadores Relacionales de Cadena
+
+Estos operadores se usan para verificar la relación entre dos operandos de cadena, los operandos de cadena se consideran aquellos que NO son númericos. op1 eq op2 
+El operador retornará verdadero si op1 es igual a op2. Por ejemplo "c" eq "c" es verdadero.
+
+op1 ne op2 
+El operador retonará verdadero si op1 no es igual a op2. Por ejemplo "a" ne "b" es verdadero.
+
+op1 lt op2 
+El operador retornará verdadero si op1 es menor a op2. Por ejemplo "a" lt "b" es verdadero.
+
+op1 le op2 
+El operador retornará verdadero si op1 es menor o igual a op2. Por ejemplo "a" le "b" y "a" le "a" son verdaderos.
+
+op1 gt op2 
+El operador retornará verdadero si op1 es mayor a op2. Por ejemplo "z" gt "a" es verdadero.
+
+op1 ge op2 
+El operador retornará verdadero si op1 es mayor o igual a op2. Por ejemplo "z" ge "y" y "z" ge "z" son verdaderos.
+
+op1 cmp op2 
+El operador tiene tres posible retornos. 1 si op1 es mayor a op2, 0 si op1 es igual a op2 y -1 si op1 es menor a op2.
+
+Operador Ternario
+
+El operador ternario es sumamente útil en Perl y realmente es una secuencia de operadores, su sintáxis es como sigue:
+
+CONDICION ? PARTE-VERDADERA : PARTE-FALSA
+Lo que te permite el operador es evaluar la CONDICION y dependiendo de si es verdadera o falsa se regresará la parte que corresponda. Esto se podrá comprender más con un ejemplo:
+my $num = 10;
+my $var1 = ($num > 5) ? "Mayor" : "Menor";
+Lo que estamos haciendo es realizando una asignación a la variable $var1 dependiendo de la condición. En este caso la condición es ($num > 5), si esto resulta verdadero, la palabra Mayor se asignará a la variable, de lo contrario será la palabra Menor.
+Este operador se podrá comprender más a fondo cuando veamos los enunciados de control en la siguiente parte del tutorial.
+
+Operador de Rango (..)
+
+El operador de rango nos resulta sumamente útil cuando queremos crear arrays con valores contiguos. Por ejemplo, dígamos que queremos crear un array con los números del 1 al 10, uno estaría tentado a hacerlo de la siguiente manera:
+
+my @array = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+NOTA: Vemos como no usamos comillas para los valores en este caso debido a que los elementos son números NO cadenas de texto
+Esto resulta sumamente impráctico, y más si queremos asignar mucho más números. Pero esto es posible comprimirlo usando el operador de rango:
+
+my @array = (1..10);
+Ahora tendremos nuestro array con la lista de números del 1 al 10.
+Pero aparte el operador es inteligente, entonces si hacemos algo así:
+
+my @array = (01..10);
+Nuestro array contendrá correctamente los valores 01,02,03,04,05,06,07,08,09,10.
+Ahora veamos que pasa si usamos letras:
+
+my @array = ('a'..'e');
+El resultado es justo como lo queremos a,b,c,d,e.
+Pongamos ahora en prueba a Perl, ¿te puedes imaginar los valores que resultarían de lo siguiente?:
+
+my @array = ('aa'..'af');
+Los valores serían aa,ab,ac,ad,ae,af.
+Operador de Concatenación
+
+Muchas veces no queremos sumar ni restar, o realizar ninguna operación entre dos operandos, sino que queremos "pegarlos''. Para eso tenemos el operador de concatenación.
+
+Este operador es un simple punto . y funciona de la siguiente manera:
+
+1
+2
+3
+4
+    my $saludo = "Hola me llamo ";
+    my $nombre = "Uriel";
+ 
+    my $frase = $saludo . $nombre;
+Como resultado nuestra variable $frase tendrá el valor "Hola me llamo Uriel". Pero, que pasa si combinamos números con cadenas:
+my $edad = "Tengo " . 21 . " años".
+Como resultado en la variable $edad tendremos el valor "Tengo 21 años", pues Perl realiza la conversión del número 21 a una cadena detrás de las cortinas de manera automática.
+Operador de Repetición
+
+Este operador lo usamos para duplicar una cadena n número de veces. El operador se define con una x, por ejemplo:
+
+my $var = "A" x 6;
+Esto genera el valor AAAAAA.
+Operadores de Asignación
+
+A través de todo el tutorial hemos estado usando el operador de asignación básico =. Ahora veremos que hay más maneras de asignar un valor a una variable.
+
+Por ejemplo, dígamos que tenemos algo así:
+
+1
+2
+3
+4
+    my $var = 1;
+    my $num = 20;
+ 
+    $var = $var + $num;
+Al final obtendremos el valor 21 en nuestra variable $var, pero esto se ve demasiado repetitivo y tedioso, y pues como siempre, Perl tiene una manera más simple de realizar las cosas, pues esto lo podríamos lograr más sencillamente usando alguno de los operadores de asignación.
+$var += $num;
+Vemos como estamos usando un diferente operador de asignación +=. Este operador lo que hace es sumar el valor de la derecha a nuestra variable de la izquierda.
+Hechemos una vistazo a otro ejemplo para entender un poco más. Lo más seguro es que sepas el valor final de nuestra variable con solo verlo, pues Perl es muy intuitivo:
+
+my $num = 5;
+
+$num -= 4;
+¿Puedes suponer que valor tendrá $num?
+Si dijiste 1 estás en lo correcto.
+
+Aquí está la lista de todos los operadores de asignación disponibles:
+
+    var = op1;
+    var += op1;
+    var -= op1;
+    var *= op1;
+    var /= op1;
+    var %= op1;
+    var .= op1;
+    var **= op1;
+    var x= op1;
+    var <<= op1;
+    var >>= op1;
+    var &= op1;
+    var |= op1;
+    var ^= op1;
+Orden de Precedencia
+Muchas veces nos encontraremos usando varios operadores en una misma expresión.
+
+my $var = 10 + 5 * 4 / 2;
+Si esto sucede, ¿qué operadores se ejecutan primero? Para esto Perl tiene un orden de precedencia, es un orden establecido en donde podemos ver que operadores se ejecutan primero y cuales al final. Es sumamente importante que tengamos siempre presente esto o si no nos encontraremos con resultados innesperados.
+Aquí va una tabla con los operadores más usados ordenados por precedencia:
+
+    (), [], {}    LLamadas a funciones, paréntesis
+    ++,--         Incremento y decremento
+    **            Exponenciación
+    *,/,%,x       Multiplicación,división,módulo,repetición
+    +,-,.         Suma, resta, concatenación de cadena
+    &&            AND lógico
+    ||            OR lógico
+    ..            Operador de rango
+    =             Operadores de asignación
+Cabe destacar que la tabla para nada está completa, faltan muchos operadores, los cuales se podrán ver en la documentación de Perl. Simplemente se enlistaron los más comúnes.
+Viendo la tabla ¿te podrías imaginar el resultado de la siguiente operación?:
+
+my $num = 10 + 4 / 2;
+Si dijiste que 7 estás incorrecto, el resultado será 12. La razón de esto es que si vemos la tabla de precedencia podremos ver que la división tiene más precedencia que la suma, por lo que la primera operación que se realiza es es 4/2, por lo que después se realiza 10+2.
+Pero ¿qué pasa si queremos que se ejecute la suma primero? Para eso nos sirven los paréntesis que tienen la mayor precedencia:
+
+my $num = (10 + 4) / 2;
+Ahora sí, como los paréntesis ocupan el primer lugar de precedencia lo primero que se ejecuta es 10+4 y después 14/7.
+Realmente es sencillo, solamente hay que recordar en todo momento los níveles de precedencia, y SIEMPRE que haya alguna duda, usa los paréntesis.
+
+Así finalizamos con los operadores.
+
+Podrán pensar que es demasiada información, pero como dije al principio, son bastante intuitivos, se terminarán acostumbrando a ellos, pues junto con las variables, esto es lo más básico de Perl.
+
+Así termina la primera sesión del tutorial Perl Básico.

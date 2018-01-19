@@ -1,0 +1,11 @@
+Tutoriales de perl
+Si quieres buenos tutoriales de perl aquí va una lista de sitios en que puedes encontrar mucha información, no todos estan en español:
+
+http://perlenespanol.com/tutoriales
+http://abcdatos.com/
+http://perlmonks.com/
+http://perlguru.com/
+
+También si necesitan módulos de perl el lugar para encontrarlos es "CPAN":
+
+http://search.cpan.org/

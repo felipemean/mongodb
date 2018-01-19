@@ -1,0 +1,50 @@
+ 1218  perl -wne '/uno/ && print' lemario.txt
+ 1219  perl -wne 'print if /........../' lemario.txt
+ 1220  perl -wne 'print if /^..........$/' lemario.txt
+ 1221  perl -wne 'print if /[aeiou]........../' lemario.txt
+ 1222  perl -wne 'print if /^[aeiou]..........$/' lemario.txt
+ 1223  perl -wne 'print if /^[aeiou]..........$/' lemario.txt | more
+ 1224  perl -wne 'print if /^[aeiou].........$/' lemario.txt | more
+ 1225  perl -wne 'print if /^[aeiou]....$/' lemario.txt | more
+ 1226  perl -wne 'print if /^[^aeiou]....$/' lemario.txt | more
+ 1227  perl -wne 'print if /^[^a-g]....$/' lemario.txt | more
+ 1228  perl -wne 'print if /^[^a-v]....$/' lemario.txt | more
+ 1229  perl -wne 'print if /oña|ina/' lemario.txt | more
+ 1230  perl -wne 'print if /^[a-g][o-z]/' lemario.txt | more
+ 1231  perl -wne 'print if /^[a-g]|[o-z]/' lemario.txt | more 
+ 1244  perl -wne 'print if /\s/' lemario.txt | more
+ 1245  perl -wne 'print if /^.*\s.*$/' lemario.txt | more
+ 1246  perl -wne 'print if /^\w+\s\w+$/' lemario.txt | more
+ 1247  perl -wne 'print if /^[a-zA-Z0-9]+\s\w+$/' lemario.txt | more
+ 1248  perl -wne 'print if /^\w+a?\s\w+$/' lemario.txt | more
+ 1249  perl -wne 'print if /^\w+a\s\w+$/' lemario.txt | more
+ 1250  perl -wne 'print if /^\w+a{2}\s\w+$/' lemario.txt | more
+ 1251  perl -wne 'print if /a.?a.?a/' lemario.txt | more
+ 1252  perl -wne 'print if /a.?a.?a.?a/' lemario.txt | more
+ 1253  perl -wne 'print if /a.?a.?a.?a.?a/' lemario.txt | more
+ 1254  perl -wne 'print if /a.?o.?a.?e.?a/' lemario.txt | more
+ 1255  perl -wne 'print if /a.{2}o/' lemario.txt | more
+ 1256  perl -wne 'print if /a.{2,5}o/' lemario.txt | more
+ 1257  perl -wne 'print if /(aeiou){2}(cd)/' lemario.txt | more
+ 1258  perl -wne 'print if /(aeiou){2}/' lemario.txt | more
+ 1259  perl -wne 'print if /[aeiou]{2}/' lemario.txt | more
+ 1260  perl -wne 'print if /[aeiou]{3}/' lemario.txt | more
+ 1261  perl -wne 'print if /[aeiou]{4}/' lemario.txt | more
+ 1262  perl -wne 'print if /(eno){1}/' lemario.txt | more
+ 1263  perl -wne 'print if /(eno){2}/' lemario.txt | more
+ 1264  perl -wne 'print if /(pa){2}/' lemario.txt | more
+ 1265  perl -wne 'print if /(pa){3}/' lemario.txt | more
+ 1268  perl -wne 'print if /(pa){2}/; print $1' lemario.txt | more
+ 1269  perl -wne 'print if /(\w+) (\w)/' lemario.txt | more
+ 1270  perl -wne 'print if /(\w+) (\w+)/' lemario.txt | more
+ 1271  perl -wne 'print if /(\w+) (\w+)/; print "$2 $1\n' lemario.txt | more
+ 1272  perl -wne 'print if /(\w+) (\w+)/; print "$2 $1\n"' lemario.txt | more
+ 1273  perl -wne 'print if /(\w+) (\w+)/; print "$2 $1\n";' lemario.txt | more
+ 1274  perl -wne 'if (/(\w+) (\w+)/) { print "$2 $1\n";}' lemario.txt | more
+ 1275  perl -wne 'print if /(\w+) (\w+)/' lemario.txt | more
+ 1276  perl -wne 'if (/(\w+) (\w+)/) { print "$2 $1\n";}' lemario.txt | more
+ 1277* perl -wne 'if (/(\w+) (\w+)/) { print "$1$2\n";}' lemario.txt | moreq
+ 1280  perl -wne 'print if /^\w+?\s\w+$/' lemario.txt | more
+ 1281  perl -wne 'if (/(pa){2}/) {print "$` $& $´\n"; ' lemario.txt | more
+ 1282  perl -wne 'if (/(pa){2}/) {print "$` $& $´\n"}; ' lemario.txt | more
+ 1283  perl -wne 'if (/(pa){2}/) {print "$&\n"}; ' lemario.txt | more

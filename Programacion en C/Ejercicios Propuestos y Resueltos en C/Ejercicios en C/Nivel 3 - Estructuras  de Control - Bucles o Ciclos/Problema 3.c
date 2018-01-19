@@ -6,6 +6,7 @@ int main(){
 	int n, i; 
 	
 	printf("Digite el total de elementos: ");
+	printf("Digite el total de elementos: ");
 	scanf("%i",&n);
 	
 	i = 1;

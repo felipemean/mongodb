@@ -1,0 +1,3 @@
+#!/bin/perl
+
+print "Hi";

@@ -1,0 +1,32 @@
+Dominio
+Un hosting
+editor de codigo
+cliente FTP
+
+Dominio:  direccion de nuestro site
+
+www.myWeb.com -> 168.192.0.1
+TIPOS DE DOMINIO:    Top Level Domain).   Mas info:   www.icann.org
+ccTLD (Codigo de pais doe alto nivel) .co, .es
+gTLD-    Generico de alto nivel 
+		sTLD (Sponsored Top Level Domain)     .aero, .travel , .coop
+		uTLD  (Unsponsored)
+		
+ICANN , Se alquilan por un tiempo, se administran por ICANN
+	Empresas que esten autorizados por la ICANN. Se puede verificar en su pagina cada empresa.
+
+Seleccion de un dominio:
+	.- Mas Corto  Posible:  no guiones ni numeros
+	.- Extension
+	.- No marcas registradas 
+	.- Palabra Clave
+
+		www.nameboy.comHcer SEO: trend.google
+		
+COMPRAR DOMINIOS:
+	GoDaddy.com		-> 20€/año , 1€ primer año
+	Domain.com
+	namecheap.com	-> 7,61€/año , 1€ primer año
+	www.1and1.com -> 15€/año 1€ primer año
+	
+EVALUACION DE DOMINIOS
